@@ -52,8 +52,7 @@ namespace JohnsonControls.Metasys.BasicServices
             code = (code * 7) + IsReliable.GetHashCode();
             if (this.Unit != null)
                 code = (code * 7) + Unit.GetHashCode();
-            if (this.Timestamp != null)
-                code = (code * 7) + Timestamp.GetHashCode();
+            code = (code * 7) + Timestamp.GetHashCode();
             code = (code * 7) + Value.GetHashCode();
             return code;
         }

@@ -1258,7 +1258,7 @@ namespace JohnsonControls.Metasys.BasicServices
         [Obsolete("Use ReadPropertyMultipleAsync(IEnumerable<ObjectId>, IEnumerable<string>) instead.")]
         public Task<IEnumerable<VariantMultiple>> ReadPropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<string> attributeNames)
         {
-            return ReadPropertyMultipleAsync(ids.Cast<ObjectId>(), attributeNames);
+            return ReadPropertyMultipleAsync(ids.Select(id => (ObjectId)id), attributeNames);
         }
 
         // WritePropertyMultiple ----------------------------------------------------------------------------------------------------
@@ -1272,7 +1272,7 @@ namespace JohnsonControls.Metasys.BasicServices
         [Obsolete("Use WritePropertyMultipleAsync(IEnumerable<ObjectId>, Dictionary<string, object>) instead.")]
         public Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, Dictionary<string, object> attributeValues)
         {
-            return WritePropertyMultipleAsync(ids.Cast<ObjectId>(), attributeValues);
+            return WritePropertyMultipleAsync(ids.Select(id => (ObjectId)id), attributeValues);
         }
 
         // WritePropertyMultiple (2) ------------------------------------------------------------------------------------------------
@@ -1287,7 +1287,7 @@ namespace JohnsonControls.Metasys.BasicServices
         [Obsolete("Use WritePropertyMultipleAsync(IEnumerable<ObjectId> ids, IEnumerable<ValueTuple<string, Value>>) instead.")]
         public Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<(string Attribute, object Value)> attributeValues)
         {
-            return WritePropertyMultipleAsync(ids.Cast<ObjectId>(), attributeValues);
+            return WritePropertyMultipleAsync(ids.Select(id => (ObjectId)id), attributeValues);
         }
 
         #endregion

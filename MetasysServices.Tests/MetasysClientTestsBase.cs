@@ -175,7 +175,7 @@ namespace MetasysServices.Tests
         /// </summary>
         protected static void PrintMessage(string message)
         {
-            Console.Error.WriteLine(message);
+            Console.WriteLine(message);
         }
 
         /// <summary>

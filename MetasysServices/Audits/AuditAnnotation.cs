@@ -47,8 +47,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 code = (code * 7) + this.Action.GetHashCode();
             if (this.AuditUrl != null)
                 code = (code * 7) + AuditUrl.GetHashCode();
-            if (this.CreationTime != null)
-                code = (code * 7) + CreationTime.GetHashCode();
+            code = (code * 7) + CreationTime.GetHashCode();
             if (this.Signature != null)
                 code = (code * 7) + Signature.GetHashCode();
             return code;

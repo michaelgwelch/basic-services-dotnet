@@ -92,18 +92,15 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <inheritdoc/>
         public void LoadCOVSubscriptions(Guid id)
         {
-            if (id != null)
+            var subscription = new Subscription
             {
-                var subscription = new Subscription
-                {
-                    RelativeUrl = "api/" + Version.ToString() + "/objects/" + id.ToString() + "/attributes/presentValue",
-                    Method = "GET",
-                    Body = null
-                };
+                RelativeUrl = "api/" + Version.ToString() + "/objects/" + id.ToString() + "/attributes/presentValue",
+                Method = "GET",
+                Body = null
+            };
 
-                _subscriptionRequest.Clear();
-                _subscriptionRequest.Add(subscription);
-            }
+            _subscriptionRequest.Clear();
+            _subscriptionRequest.Add(subscription);
         }
 
         /// <inheritdoc/>

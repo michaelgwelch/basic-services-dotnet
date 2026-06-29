@@ -65,8 +65,7 @@ namespace JohnsonControls.Metasys.BasicServices
             var code = 13;
             if (Token != null)
                 code = (code * 7) + Token.GetHashCode();
-            if (Expires != null)
-                code = (code * 7) + Expires.GetHashCode();
+            code = (code * 7) + Expires.GetHashCode();
             if (Issuer != null)
                 code = (code * 7) + Issuer.GetHashCode();
             if (IssuedTo != null)

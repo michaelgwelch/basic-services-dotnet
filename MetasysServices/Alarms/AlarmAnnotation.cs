@@ -42,8 +42,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 code = (code * 7) + this.Action.GetHashCode();
             if (this.AlarmUrl != null)
                 code = (code * 7) + AlarmUrl.GetHashCode();
-            if (this.CreationTime != null)
-                code = (code * 7) + CreationTime.GetHashCode();
+            code = (code * 7) + CreationTime.GetHashCode();
             return code;
         }
 
