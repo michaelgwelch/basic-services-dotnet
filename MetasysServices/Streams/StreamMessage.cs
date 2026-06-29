@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -48,35 +49,33 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Object Identifier (GUID)
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public Guid ObjectId { get; set; }
 
         /// <summary>
         /// Object Name
         /// </summary>
-        public String ObjectName { get; set; }
+        public string ObjectName { get; set; }
 
         /// <summary>
         /// Attribute Name
         /// </summary>
-        //[JsonProperty(Required = Required.Always)]
-        public String AttributeName { get; set; }
+        public string AttributeName { get; set; }
 
         /// <summary>
         /// Item Reference (FQR)
         /// </summary>
-        //[JsonProperty(Required = Required.Always)]
-        public String ItemReference { get; set; }
+        public string ItemReference { get; set; }
 
         /// <summary>
         /// Present Value
         /// </summary>
-        public String PresentValue { get; set; }
+        public string PresentValue { get; set; }
 
         /// <summary>
         /// Event Creation Time
         /// </summary>
-        public String CreationTime { get; set; }
+        public string CreationTime { get; set; }
 
         /// <summary>
         /// Event that generated the stream message
@@ -86,7 +85,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Description
         /// </summary>
-        public String Description { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// JSON encoded string containing an object
@@ -115,7 +114,7 @@ namespace JohnsonControls.Metasys.BasicServices
             if ((data.StartsWith("{") && data.EndsWith("}")) || //For object
                     (data.StartsWith("[") && data.EndsWith("]"))) //For array
             {
-                var dataObj = JObject.Parse(data);
+                var dataObj = JsonNode.Parse(data) as JsonObject;
                 switch (Event.ToLower())
                 {
                     case "object.values.update":
@@ -140,63 +139,57 @@ namespace JohnsonControls.Metasys.BasicServices
                         switch (Event.ToLower())
                         {
                             case "activity.audit.new":
-                                if (dataObj.ContainsKey("activity") && (dataObj["activity"] != null))
+                                if (dataObj != null && dataObj.ContainsKey("activity") && dataObj["activity"] != null)
                                 {
-                                    JObject grp = (JObject)dataObj["activity"];
+                                    JsonObject grp = dataObj["activity"] as JsonObject;
                                     this.Description = GetJObjectValue(grp, "audit", "description");
-                                };
-
+                                }
                                 break;
                             case "activity.alarm.new":
                             case "activity.alarm.ack":
-                                if (dataObj.ContainsKey("activity") && (dataObj["activity"] != null))
+                                if (dataObj != null && dataObj.ContainsKey("activity") && dataObj["activity"] != null)
                                 {
-                                    JObject grp = (JObject)dataObj["activity"];
+                                    JsonObject grp = dataObj["activity"] as JsonObject;
                                     this.Description = GetJObjectValue(grp, "alarm", "description");
-                                };
-
+                                }
                                 break;
                             default:
                                 break;
                         }
 
                         break;
-                    case "message": // streaming heartbeat - why does it come through without an "Event"?
+                    case "message":
                         break;
                     case "object.values.heartbeat":
                         break;
                     default:
                         break;
                 }
-
             }
         }
 
-        private string GetJObjectValue(JObject jObj, string group, string field)
+        private string GetJObjectValue(JsonObject jObj, string group, string field)
         {
             string res = string.Empty;
             try
             {
                 if (jObj != null)
                 {
-                    if (jObj.ContainsKey(group) && (jObj[group] != null))
+                    if (jObj.ContainsKey(group) && jObj[group] != null)
                     {
-                        JObject grp = (JObject)jObj[group];
-
-                        if ((grp.ContainsKey(field)) && (grp[field] != null))
+                        JsonObject grp = jObj[group] as JsonObject;
+                        if (grp != null && grp.ContainsKey(field) && grp[field] != null)
                         {
-                            res = grp[field].Value<string>();
+                            res = (string)grp[field];
                         }
-                    };
-                };
+                    }
+                }
             }
             catch (ArgumentNullException e)
             {
-                // Something went wrong on object parsing
                 throw new MetasysObjectException(e);
             }
             return res;
         }
-
     }
 }

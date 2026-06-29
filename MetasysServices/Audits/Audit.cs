@@ -1,4 +1,5 @@
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -10,13 +11,13 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// The identifier of the audit.
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public ActivityId Id { get; set; }
 
         /// <summary>
         /// The dateTime representing the creation time when this audit message was created.
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string CreationTime { get; set; }
 
         /// <summary>
@@ -82,7 +83,6 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// A link to the object on which the activity was generated.
         /// </summary>
-        [JsonProperty(Required = Required.Default)]
         public string ObjectUrl { get; set; }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

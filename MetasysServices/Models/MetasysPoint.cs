@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -53,34 +53,32 @@ namespace JohnsonControls.Metasys.BasicServices
         {
         }
 
-        internal MetasysPoint(JToken token)
+        internal MetasysPoint(JsonNode token)
         {
             try
             {
-                EquipmentName = token["equipmentName"].Value<string>();
-                ShortName = token["shortName"].Value<string>();
-                Label = token["label"].Value<string>();
-                Category = token["category"].Value<string>();
-                IsDisplayData = token["isDisplayData"].Value<bool>();
-                //AttributeUrl = GetJTokenValue(token, "attributeUrl");
+                EquipmentName = (string)token["equipmentName"];
+                ShortName = (string)token["shortName"];
+                Label = (string)token["label"];
+                Category = (string)token["category"];
+                IsDisplayData = (bool)token["isDisplayData"];
                 try
                 {
-                    AttributeUrl = token["attributeUrl"].Value<string>();
+                    AttributeUrl = (string)token["attributeUrl"];
                 }
                 catch
                 {
                     AttributeUrl = null;
                 }
-                //Attribute = GetJTokenValue(token, "attribute");
                 try
                 {
-                    Attribute = token["attribute"].Value<string>();
+                    Attribute = (string)token["attribute"];
                 }
                 catch
                 {
                     Attribute = null;
                 }
-                ObjectUrl = token["objectUrl"].Value<string>();
+                ObjectUrl = (string)token["objectUrl"];
                 PresentValue = null;
             }
             catch (Exception e)
@@ -96,7 +94,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

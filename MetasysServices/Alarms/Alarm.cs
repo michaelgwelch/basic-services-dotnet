@@ -1,4 +1,5 @@
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -15,13 +16,13 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Alarm Unique Identifier
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public ActivityId Id { get; set; }
 
         /// <summary>
         /// Item fully qualified reference
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string ItemReference { get; set; }
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Item name
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string Name { get; set; }
 
         /// <summary>
@@ -181,7 +182,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
 
     }

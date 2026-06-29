@@ -47,7 +47,7 @@ namespace MetasysServices.Tests
             ""total"": 1,           
             ""items"": [" + Attribute + @"],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/trendedAttributes""
-            ";
+            }";
             httpTest.RespondWith(response);
             httpTest.RespondWith(AttributeDetail);
             var trendedAttributes = client.Trends.GetTrendedAttributes(mockid);
@@ -74,7 +74,7 @@ namespace MetasysServices.Tests
             ""total"": 0,          
             ""items"": [{}],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/trendedAttributes""
-            ";
+            }";
             httpTest.RespondWith(response);
             Assert.Throws<MetasysObjectException>(() => client.Trends.GetTrendedAttributes(mockid));
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/trendedAttributes")
@@ -92,7 +92,7 @@ namespace MetasysServices.Tests
             ""total"": 1,        
             ""items"": [" + attr + @"],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/trendedAttributes""
-            ";
+            }";
             httpTest.RespondWith(response);
             var e = Assert.Throws<MetasysObjectException>(() =>
               client.Trends.GetTrendedAttributes(mockid));

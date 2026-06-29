@@ -1,34 +1,35 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
     /// <summary>
-    /// NetworkDevice is a structure that hold information about a Metasys Network Device 
+    /// NetworkDevice is a structure that hold information about a Metasys Network Device
     /// </summary>
     public class NetworkDevice
     {
         /// <summary>
         /// Item Unique Identifier (GUID)
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public Guid Id { get; set; }
 
         /// <summary>
         /// Item fully qualified reference
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string ItemReference { get; set; }
 
         /// <summary>
         /// Item name
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string Name { get; set; }
 
         /// <summary>
-        /// The resource type detail reference. 
+        /// The resource type detail reference.
         /// </summary>
         /// <remarks> This is available since Metasys API v3. </remarks>
         public string ObjectType { get; set; }
@@ -41,12 +42,12 @@ namespace JohnsonControls.Metasys.BasicServices
             ObjectType = objectType;
         }
 
-        internal NetworkDevice(JToken token, ApiVersion version)
+        internal NetworkDevice(JsonNode token, ApiVersion version)
         {
             try
             {
-                Id = new Guid(token["id"].Value<string>());
-                ItemReference = token["itemReference"].Value<string>();
+                Id = new Guid((string)token["id"]);
+                ItemReference = (string)token["itemReference"];
             }
             catch (Exception e)
             {
@@ -55,7 +56,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
             try
             {
-                Name = token["name"].Value<string>();
+                Name = (string)token["name"];
             }
             catch
             {
@@ -64,7 +65,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
             try
             {
-                ObjectType = token["objectType"].Value<string>();
+                ObjectType = (string)token["objectType"];
             }
             catch
             {
@@ -109,7 +110,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

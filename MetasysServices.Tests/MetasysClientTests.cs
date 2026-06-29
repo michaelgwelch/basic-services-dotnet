@@ -1,7 +1,7 @@
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices;
 using JohnsonControls.Metasys.BasicServices.Enums;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using System;
@@ -53,7 +53,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/login")
                 .WithVerb(HttpMethod.Post)
                 .WithContentType("application/json")
-                .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"")
+                .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"}")
                 .Times(1);
             var token = client.GetAccessToken();
             var expected = new AccessToken("hostname", "username", "Bearer faketokenLoginAsync", dateTime2);
@@ -73,7 +73,7 @@ namespace MetasysServices.Tests
                 httpTest.ShouldHaveCalled($"https://hostname/api/v2/login")
                     .WithVerb(HttpMethod.Post)
                     .WithContentType("application/json")
-                    .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"")
+                    .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"}")
                     .Times(1);
                 var token = client.GetAccessToken();
                 var expected = new AccessToken("hostname", "username", "Bearer faketokenLoginAsyncContext", dateTime2);
@@ -94,7 +94,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/login")
                 .WithVerb(HttpMethod.Post)
                 .WithContentType("application/json")
-                .WithRequestBody("{\"username\":\"username\",\"password\":\"badpassword\"")
+                .WithRequestBody("{\"username\":\"username\",\"password\":\"badpassword\"}")
                 .Times(1);
             Assert.AreEqual(original, client.GetAccessToken()); // The access token is not changed on error
             PrintMessage($"TestLoginUnauthorizedThrowsException: {e.Message}");
@@ -114,7 +114,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://badhost/api/v2/login")
                 .WithVerb(HttpMethod.Post)
                 .WithContentType("application/json")
-                .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"")
+                .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"}")
                 .Times(1);
             Assert.AreEqual(original, client.GetAccessToken()); // The access token is not changed on error
             PrintMessage($"TestLoginBadHostThrowsException: {e.Message}");
@@ -133,7 +133,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/login")
                 .WithVerb(HttpMethod.Post)
                 .WithContentType("application/json")
-                .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"")
+                .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"}")
                 .Times(1);
             Assert.AreEqual(original, client.GetAccessToken()); // The access token is not changed on error
             PrintMessage($"TestLoginBadResponseMissingTokenThrowsException: {e.Message}");
@@ -152,7 +152,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/login")
                 .WithVerb(HttpMethod.Post)
                 .WithContentType("application/json")
-                .WithRequestBody("{\"username\":\"username\",\"password\":\"badpassword\"")
+                .WithRequestBody("{\"username\":\"username\",\"password\":\"badpassword\"}")
                 .Times(1);
             Assert.AreEqual(original, client.GetAccessToken()); // The access token is not changed on error
             PrintMessage($"TestLoginBadResponseMissingExpiresThrowsException: {e.Message}");
@@ -288,7 +288,7 @@ namespace MetasysServices.Tests
         [Test]
         public void TestGetObjectIdentifierNullResponseThrowsException()
         {
-            httpTest.RespondWithJson(JToken.Parse("null"));
+            httpTest.RespondWithJson(JsonNode.Parse("null"));
 
             var e = Assert.Throws<MetasysGuidException>(() =>
                 client.GetObjectIdentifier("fully:qualified/reference5"));
@@ -323,7 +323,7 @@ namespace MetasysServices.Tests
         public async Task TestReadPropertyIntegerAsync()
         {
             string json = "{\"item\": { \"" + mockAttributeName + "\": 1 }}";
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = (await client.ReadPropertyAsync(mockid, mockAttributeName).ConfigureAwait(false));
@@ -341,7 +341,7 @@ namespace MetasysServices.Tests
             AsyncContext.Run(() =>
             {
                 string json = "{\"item\": { \"" + mockAttributeName + "\": 1 }}";
-                var token = JToken.Parse(json);
+                var token = JsonNode.Parse(json);
                 httpTest.RespondWith(json);
 
                 Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -358,7 +358,7 @@ namespace MetasysServices.Tests
         public void TestReadPropertyFloat()
         {
             string json = "{\"item\": { \"" + mockAttributeName + "\": 1.1 }}";
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -374,7 +374,7 @@ namespace MetasysServices.Tests
         public void TestReadPropertyString()
         {
             string json = "{\"item\": { \"" + mockAttributeName + "\": \"stringvalue\" }}";
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -390,7 +390,7 @@ namespace MetasysServices.Tests
         public void TestReadPropertyBooleanTrue()
         {
             string json = "{\"item\": { \"" + mockAttributeName + "\": true }}";
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -406,7 +406,7 @@ namespace MetasysServices.Tests
         public void TestReadPropertyBooleanFalse()
         {
             string json = "{\"item\": { \"" + mockAttributeName + "\": false }}";
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -423,7 +423,7 @@ namespace MetasysServices.Tests
         {
             string json = string.Concat("{ \"item\": { \"presentValue\": {",
                 "\"value\": 60 } } }");
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, "presentValue");
@@ -440,7 +440,7 @@ namespace MetasysServices.Tests
         {
             string json = string.Concat("{ \"item\": { \"presentValue\": {",
                 "\"value\": \"stringvalue\" } } }");
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, "presentValue");
@@ -460,7 +460,7 @@ namespace MetasysServices.Tests
                 "\"reliability\": \"", ReliableHighEnum, "\",",
                 "\"priority\": \"", PriorityNoneEnum, "\"}");
             string json = string.Concat("{ \"item\": { \"presentValue\": ", body, " } }");
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, "presentValue");
@@ -480,7 +480,7 @@ namespace MetasysServices.Tests
                 "\"reliability\": \"", ReliableHighEnum, "\",",
                 "\"priority\": \"", PriorityNoneEnum, "\"}");
             string json = string.Concat("{ \"item\": { \"", mockAttributeName, "\": ", body, " } }");
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -496,7 +496,7 @@ namespace MetasysServices.Tests
         public void TestReadPropertyArrayIntegers()
         {
             string json = "{ \"item\": { \"" + mockAttributeName + "\": [ 0, 1 ] } }";
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -513,7 +513,7 @@ namespace MetasysServices.Tests
         {
             string body = "[ \"stringvalue1\", \"stringvalue2\" ]";
             string json = string.Concat("{ \"item\": { \"", mockAttributeName, "\": ", body, " } }");
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -532,7 +532,7 @@ namespace MetasysServices.Tests
             "{ \"item1\": \"stringvalue1\", \"item2\": \"stringvalue2\" },",
             "{ \"item1\": \"stringvalue3\", \"item2\": \"stringvalue4\" } ]");
             string json = string.Concat("{ \"item\": { \"", mockAttributeName, "\": ", body, " } }");
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -548,7 +548,7 @@ namespace MetasysServices.Tests
         public void TestReadPropertyUnsupportedEmptyObject()
         {
             string json = string.Concat("{ \"item\": { \"", mockAttributeName, "\": { } } }");
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             httpTest.RespondWith(json);
 
             Variant result = client.ReadProperty(mockid, mockAttributeName);
@@ -644,7 +644,7 @@ namespace MetasysServices.Tests
         {
             var json = "{ \"item\": { \"" + mockAttributeName + "\": \"stringvalue\" } }";
             httpTest.RespondWith(json);
-            var token = JToken.Parse(json);
+            var token = JsonNode.Parse(json);
             List<ObjectId> ids = new() { mockid };
             List<string> attributes = new() { mockAttributeName };
             var results = client.ReadPropertyMultiple(ids, attributes);
@@ -678,10 +678,10 @@ namespace MetasysServices.Tests
                 mockAttributeName, mockAttributeName2, mockAttributeName3, mockAttributeName4, mockAttributeName5 };
             var results = await client.ReadPropertyMultipleAsync(ids, attributes).ConfigureAwait(false);
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes")
+            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes*")
                 .WithVerb(HttpMethod.Get)
                 .Times(5);
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}/attributes")
+            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}/attributes*")
                 .WithVerb(HttpMethod.Get)
                 .Times(5);
             Assert.AreEqual(results.Count(), 2);
@@ -710,10 +710,10 @@ namespace MetasysServices.Tests
                 List<string> attributes = new() { mockAttributeName, mockAttributeName2, mockAttributeName3, mockAttributeName4, mockAttributeName5 };
                 var results = client.ReadPropertyMultiple(ids, attributes);
 
-                httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes")
+                httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes*")
                     .WithVerb(HttpMethod.Get)
                     .Times(5);
-                httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}/attributes")
+                httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}/attributes*")
                     .WithVerb(HttpMethod.Get)
                     .Times(5);
                 Assert.AreEqual(results.Count(), 2);
@@ -1199,8 +1199,8 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            Command expected1 = new(JToken.Parse(command1), testCulture, ApiVersion.v2);
-            Command expected2 = new(JToken.Parse(command2), testCulture, ApiVersion.v2);
+            Command expected1 = new(JsonNode.Parse(command1), testCulture, ApiVersion.v2);
+            Command expected2 = new(JsonNode.Parse(command2), testCulture, ApiVersion.v2);
             Assert.AreEqual(expected1, commands.ElementAt(0));
             Assert.AreEqual(expected2, commands.ElementAt(1));
         }
@@ -1226,7 +1226,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            Command expected = new(JToken.Parse(command1), testCulture, ApiVersion.v2);
+            Command expected = new(JsonNode.Parse(command1), testCulture, ApiVersion.v2);
             Assert.AreEqual(expected, commands.ElementAt(0));
         }
 
@@ -1252,7 +1252,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            Command expected = new(JToken.Parse(command1), testCulture, ApiVersion.v2);
+            Command expected = new(JsonNode.Parse(command1), testCulture, ApiVersion.v2);
             Assert.AreEqual(expected, commands.ElementAt(0));
         }
 
@@ -1278,7 +1278,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            Command expected = new(JToken.Parse(command1), testCulture, ApiVersion.v2);
+            Command expected = new(JsonNode.Parse(command1), testCulture, ApiVersion.v2);
             Assert.AreEqual(expected, commands.ElementAt(0));
         }
 
@@ -1298,7 +1298,7 @@ namespace MetasysServices.Tests
                         "\"const\": \"writePriorityEnumSet.priorityNone\",",
                         "\"title\": \"0 (No Priority)\"},",
                         "{\"const\": \"writePriorityEnumSet.priorityManualEmergency\",",
-                        "\"title\": \"1 (Manual Life Safety)\"}],",
+                        "\"title\": \"1 (Manual Life Safety)\"}]",
                     "},",
                     "{\"type\": \"number\",",
                     "\"title\": \"Value\",",
@@ -1314,7 +1314,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            Command expected = new(JToken.Parse(command1), testCulture, ApiVersion.v2);
+            Command expected = new(JsonNode.Parse(command1), testCulture, ApiVersion.v2);
             Assert.AreEqual(expected, commands.ElementAt(0));
         }
 
@@ -1391,7 +1391,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/networkDevices")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(device), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(device), ApiVersion.v2, null);
             Assert.AreEqual(expected, devices.ElementAt(0));
         }
 
@@ -1433,8 +1433,8 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/networkDevices")
                 .WithVerb(HttpMethod.Get)
                 .Times(2);
-            MetasysObject expected1 = new(JToken.Parse(device1), ApiVersion.v2, null);
-            MetasysObject expected2 = new(JToken.Parse(device2), ApiVersion.v2, null);
+            MetasysObject expected1 = new(JsonNode.Parse(device1), ApiVersion.v2, null);
+            MetasysObject expected2 = new(JsonNode.Parse(device2), ApiVersion.v2, null);
             Assert.AreEqual(expected1, devices.ElementAt(0));
             Assert.AreEqual(expected2, devices.ElementAt(1));
         }
@@ -1462,7 +1462,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/networkDevices")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(device), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(device), ApiVersion.v2, null);
             Assert.AreEqual(expected, devices.ElementAt(0));
         }
 
@@ -1542,7 +1542,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/networkDevices")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(device), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(device), ApiVersion.v2, null);
             Assert.AreEqual(expected, devices.ElementAt(0));
         }
 
@@ -1718,7 +1718,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/objects")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(obj), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(obj), ApiVersion.v2, null);
             Assert.AreEqual(expected, objects.ElementAt(0));
         }
 
@@ -1743,7 +1743,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/objects")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(obj), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(obj), ApiVersion.v2, null);
             Assert.AreEqual(expected, objects.ElementAt(0));
         }
 
@@ -1782,8 +1782,8 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/objects")
                 .WithVerb(HttpMethod.Get)
                 .Times(2);
-            MetasysObject expected1 = new(JToken.Parse(obj1), ApiVersion.v2, null);
-            MetasysObject expected2 = new(JToken.Parse(obj2), ApiVersion.v2, null);
+            MetasysObject expected1 = new(JsonNode.Parse(obj1), ApiVersion.v2, null);
+            MetasysObject expected2 = new(JsonNode.Parse(obj2), ApiVersion.v2, null);
             Assert.AreEqual(expected1, objects.ElementAt(0));
             Assert.AreEqual(expected2, objects.ElementAt(1));
         }
@@ -1834,9 +1834,9 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/objects")
               .WithVerb(HttpMethod.Get)
               .Times(1);
-            MetasysObject expected2 = new(JToken.Parse(obj2), ApiVersion.v2, null);
+            MetasysObject expected2 = new(JsonNode.Parse(obj2), ApiVersion.v2, null);
             List<MetasysObject> child = new() { expected2 };
-            MetasysObject expected1 = new(JToken.Parse(obj1), ApiVersion.v2, child.AsEnumerable());
+            MetasysObject expected1 = new(JsonNode.Parse(obj1), ApiVersion.v2, child.AsEnumerable());
             Assert.AreEqual(expected1, objects.ElementAt(0));
         }
 
@@ -2007,9 +2007,9 @@ namespace MetasysServices.Tests
 
                 // Assert
                 httpTest.ShouldHaveCalled($"https://hostname/api/v4/objects/{mockid}/objects")
-                    .WithQueryParamValue("flatten", "false")
-                    .WithQueryParamValue("includeInternal", "false")
-                    .WithQueryParamValue("includeExtensions", "false")
+                    .WithQueryParam("flatten", "false")
+                    .WithQueryParam("includeInternal", "false")
+                    .WithQueryParam("includeExtensions", "false")
                     .Times(1);
 
                 Assert.That(httpTest.CallLog.Count, Is.EqualTo(1));
@@ -2065,7 +2065,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/spaces")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(space), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(space), ApiVersion.v2, null);
             Assert.AreEqual(expected, devices.ElementAt(0));
         }
 
@@ -2103,8 +2103,8 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/spaces")
                 .WithVerb(HttpMethod.Get)
                 .Times(2);
-            MetasysObject expected1 = new(JToken.Parse(space1), ApiVersion.v2, null);
-            MetasysObject expected2 = new(JToken.Parse(space2), ApiVersion.v2, null);
+            MetasysObject expected1 = new(JsonNode.Parse(space1), ApiVersion.v2, null);
+            MetasysObject expected2 = new(JsonNode.Parse(space2), ApiVersion.v2, null);
             Assert.AreEqual(expected1, spaces.ElementAt(0));
             Assert.AreEqual(expected2, spaces.ElementAt(1));
         }
@@ -2130,7 +2130,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/spaces")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(space), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(space), ApiVersion.v2, null);
             Assert.AreEqual(expected, devices.ElementAt(0));
         }
 
@@ -2202,7 +2202,7 @@ namespace MetasysServices.Tests
 
             var types = client.GetSpaceTypes();
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766")
+            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766*")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
             Assert.AreEqual(0, types.Count());
@@ -2225,7 +2225,7 @@ namespace MetasysServices.Tests
             var types = client.GetSpaceTypes();
 
             MetasysObjectType expected = new(3, "Room", "Room", testCulture);
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766")
+            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766*")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
             Assert.AreEqual(expected, types.ElementAt(0));
@@ -2254,7 +2254,7 @@ namespace MetasysServices.Tests
 
             MetasysObjectType expected1 = new(3, "Room", "Room", testCulture);
             MetasysObjectType expected2 = new(2, "Floor", "Floor", testCulture);
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766")
+            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766*")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
             Assert.AreEqual(expected1, types.ElementAt(0));
@@ -2270,7 +2270,7 @@ namespace MetasysServices.Tests
             var e = Assert.Throws<MetasysHttpNotFoundException>(() =>
                 client.GetSpaceTypes());
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766")
+            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766*")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
             PrintMessage($"TestGetSpaceTypesNotFoundThrowsException: {e.Message}");
@@ -2284,7 +2284,7 @@ namespace MetasysServices.Tests
             var e = Assert.Throws<MetasysHttpException>(() =>
                 client.GetSpaceTypes());
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766")
+            httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/1766*")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
 
@@ -2334,7 +2334,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/equipment")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            MetasysObject expected = new(JToken.Parse(space), ApiVersion.v2, null);
+            MetasysObject expected = new(JsonNode.Parse(space), ApiVersion.v2, null);
             Assert.AreEqual(expected, devices.ElementAt(0));
         }
 
@@ -2372,8 +2372,8 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/equipment")
                 .WithVerb(HttpMethod.Get)
                 .Times(2);
-            MetasysObject expected1 = new(JToken.Parse(space1), ApiVersion.v2, null);
-            MetasysObject expected2 = new(JToken.Parse(space2), ApiVersion.v2, null);
+            MetasysObject expected1 = new(JsonNode.Parse(space1), ApiVersion.v2, null);
+            MetasysObject expected2 = new(JsonNode.Parse(space2), ApiVersion.v2, null);
             Assert.AreEqual(expected1, Equipment.ElementAt(0));
             Assert.AreEqual(expected2, Equipment.ElementAt(1));
         }
@@ -2458,10 +2458,10 @@ namespace MetasysServices.Tests
         public void TestMiscNullTokenValue()
         {
             string json = "{\"test\":null}";
-            JToken o = JToken.Parse(json);
+            var o = JsonNode.Parse(json);
             string oString = o.ToString().Replace(" ", "").Replace("\r", "").Replace("\n", "");
             Assert.AreEqual(json, oString);
-            Assert.AreEqual(JTokenType.Null, o["test"].Type);
+            Assert.IsNull(o["test"]); // In System.Text.Json, JSON null values return null JsonNode
         }
 
         #endregion
@@ -2495,8 +2495,8 @@ namespace MetasysServices.Tests
 
             httpTest.ShouldHaveCalled("https://hostname/api/v5/networkDevices?sort=itemReference#fragment1")
                 .WithVerb(HttpMethod.Get)
-                .WithQueryParamValue("sort", "itemReference")
-                .With(call => call.Request.RequestUri.Fragment.Equals("#fragment1"))
+                .WithQueryParam("sort", "itemReference")
+                .With(call => call.Request.Url.Fragment.Equals("fragment1"))
                 .Times(1);
         }
 
@@ -2550,7 +2550,8 @@ namespace MetasysServices.Tests
             httpTest.RespondWithJson(new TestData { Id = 1, Name = "Metasys" });
 
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, "https://hostname/api/v5/getJson");
-            var data = await client.SendAsync(httpRequest).ReceiveJson<TestData>();
+            var response = await client.SendAsync(httpRequest);
+            var data = await response.Content.ReadFromJsonAsync<TestData>();
 
             Assert.AreEqual(1, data.Id);
             Assert.AreEqual("Metasys", data.Name);
@@ -2562,10 +2563,11 @@ namespace MetasysServices.Tests
             httpTest.RespondWithJson(new { id = 1, name = "Metasys" });
 
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, "https://hostname/api/v5/getJsonDynamic");
-            var data = await client.SendAsync(httpRequest).ReceiveJson();
+            var response = await client.SendAsync(httpRequest);
+            var data = await response.Content.ReadFromJsonAsync<JsonNode>();
 
-            Assert.AreEqual(1, data.id);
-            Assert.AreEqual("Metasys", data.name);
+            Assert.AreEqual(1, data["id"].GetValue<int>());
+            Assert.AreEqual("Metasys", (string)data["name"]);
         }
 
         [Test]
@@ -2579,12 +2581,13 @@ namespace MetasysServices.Tests
             );
 
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, "https://hostname/api/v5/getJsonDynamicList");
-            var data = await client.SendAsync(httpRequest).ReceiveJsonList();
+            var response = await client.SendAsync(httpRequest);
+            var data = await response.Content.ReadFromJsonAsync<List<JsonNode>>();
 
-            Assert.AreEqual(1, data[0].id);
-            Assert.AreEqual("Metasys", data[0].name);
-            Assert.AreEqual(2, data[1].id);
-            Assert.AreEqual("Client", data[1].name);
+            Assert.AreEqual(1, data[0]["id"].GetValue<int>());
+            Assert.AreEqual("Metasys", (string)data[0]["name"]);
+            Assert.AreEqual(2, data[1]["id"].GetValue<int>());
+            Assert.AreEqual("Client", (string)data[1]["name"]);
         }
 
         [Test]
@@ -2593,7 +2596,8 @@ namespace MetasysServices.Tests
             httpTest.RespondWith("Metasys Client");
 
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, "https://hostname/api/v5/getString");
-            var data = await client.SendAsync(httpRequest).ReceiveString();
+            var response = await client.SendAsync(httpRequest);
+            var data = await response.Content.ReadAsStringAsync();
 
             Assert.AreEqual("Metasys Client", data);
         }
@@ -2604,7 +2608,8 @@ namespace MetasysServices.Tests
             httpTest.RespondWith("Metasys Client");
 
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, "https://hostname/api/v5/getStream");
-            var data = await client.SendAsync(httpRequest).ReceiveStream();
+            var response = await client.SendAsync(httpRequest);
+            var data = await response.Content.ReadAsStreamAsync();
 
             Assert.AreEqual(new MemoryStream(Encoding.UTF8.GetBytes("Metasys Client")), data);
         }
@@ -2615,7 +2620,8 @@ namespace MetasysServices.Tests
             httpTest.RespondWith("Metasys Client");
 
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, "https://hostname/api/v5/getBytes");
-            var data = await client.SendAsync(httpRequest).ReceiveBytes();
+            var response = await client.SendAsync(httpRequest);
+            var data = await response.Content.ReadAsByteArrayAsync();
 
             Assert.AreEqual(Encoding.UTF8.GetBytes("Metasys Client"), data);
         }

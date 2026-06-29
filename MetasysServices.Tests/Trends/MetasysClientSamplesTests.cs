@@ -1,5 +1,5 @@
-﻿using JohnsonControls.Metasys.BasicServices;
-using Newtonsoft.Json.Linq;
+using JohnsonControls.Metasys.BasicServices;
+using System.Text.Json;
 using NUnit.Framework;
 using System;
 using System.Linq;
@@ -52,24 +52,20 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Sample1 + @"],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1""
-            ";
+            }";
             httpTest.RespondWith(response);
             httpTest.RespondWith(Unit);
             var samples = client.Trends.GetSamples(mockid, 85, TimeFilter);
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes/85/samples")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            // Here the unit response is cached by Mane Page Method
-            //httpTest.ShouldHaveCalled($"https://hostname/api/v2/enumSets/507/members/64")
-            // .WithVerb(HttpMethod.Get) 
-            // .Times(1);
-            var responseObject = JToken.Parse(Sample1);
+            var responseObject = JsonDocument.Parse(Sample1).RootElement;
             var sample = new Sample
             {
-                Value = responseObject["value"]["value"].Value<double>(),
+                Value = responseObject.GetProperty("value").GetProperty("value").GetDouble(),
                 Unit = "deg F",
-                IsReliable = responseObject["isReliable"].Value<bool>(),
-                Timestamp = responseObject["timestamp"].Value<DateTime>()
+                IsReliable = responseObject.GetProperty("isReliable").GetBoolean(),
+                Timestamp = responseObject.GetProperty("timestamp").GetDateTime()
             };
             Assert.AreEqual(sample, samples.Items.ElementAt(0));
         }
@@ -79,18 +75,18 @@ namespace MetasysServices.Tests
         {
             var response1 = @"{
             ""total"": 2,
-            ""next"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1&page=2"",            
+            ""next"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1&page=2"",
             ""previous"": null,
             ""items"": [" + Sample1 + @"],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1&page=1""
-            ";
+            }";
             var response2 = @"{
             ""total"": 2,
-            ""next"": null,            
+            ""next"": null,
             ""previous"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1&page=1"",
             ""items"": [" + Sample2 + @"],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1&page=2""
-            ";
+            }";
             httpTest.RespondWith(response1);
             httpTest.RespondWith(Unit);
             httpTest.RespondWith(response2);
@@ -99,21 +95,21 @@ namespace MetasysServices.Tests
             var samplesPage2 = client.Trends.GetSamples(mockid, 85, TimeFilter);
             TimeFilter.Page = 1;
             // Compare the two responses in multiple pages
-            var responseObject1 = JToken.Parse(Sample1);
+            var responseObject1 = JsonDocument.Parse(Sample1).RootElement;
             var sample1 = new Sample
             {
-                Value = responseObject1["value"]["value"].Value<double>(),
+                Value = responseObject1.GetProperty("value").GetProperty("value").GetDouble(),
                 Unit = "deg F",
-                IsReliable = responseObject1["isReliable"].Value<bool>(),
-                Timestamp = responseObject1["timestamp"].Value<DateTime>()
+                IsReliable = responseObject1.GetProperty("isReliable").GetBoolean(),
+                Timestamp = responseObject1.GetProperty("timestamp").GetDateTime()
             };
-            var responseObject2 = JToken.Parse(Sample2);
+            var responseObject2 = JsonDocument.Parse(Sample2).RootElement;
             var sample2 = new Sample
             {
-                Value = responseObject2["value"]["value"].Value<double>(),
+                Value = responseObject2.GetProperty("value").GetProperty("value").GetDouble(),
                 Unit = "deg F",
-                IsReliable = responseObject2["isReliable"].Value<bool>(),
-                Timestamp = responseObject2["timestamp"].Value<DateTime>()
+                IsReliable = responseObject2.GetProperty("isReliable").GetBoolean(),
+                Timestamp = responseObject2.GetProperty("timestamp").GetDateTime()
             };
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes/85/samples")
                .WithVerb(HttpMethod.Get)
@@ -134,7 +130,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [{}],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1&page=1""
-            ";
+            }";
             httpTest.RespondWith(response);
             var e = Assert.Throws<MetasysObjectException>(() =>
             client.Trends.GetSamples(mockid, 85, TimeFilter));
@@ -156,7 +152,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + sample + @"],
             ""self"": ""https://hostname/api/v2/objects/" + mockid + @"/attributes/85/samples?startTime=2020-01-20T15:37:46.413Z&endTime=2020-01-21T15:37:46.413Z&pageSize=1&page=1""
-            ";
+            }";
             httpTest.RespondWith(response);
             var e = Assert.Throws<MetasysObjectException>(() =>
               client.Trends.GetSamples(mockid, 85, TimeFilter));

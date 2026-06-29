@@ -1,16 +1,15 @@
-﻿using EvtSource;
+using EvtSource;
 using Flurl;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Token;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -82,7 +81,6 @@ namespace JohnsonControls.Metasys.BasicServices
             _serverUrl = client.BaseUrl;
             Version = version;
 
-            FlurlHttp.ConfigureClient(_serverUrl, x => x.Settings.HttpClientFactory = new UntrustedCertClientFactory());
             HttpClientHandler httpClientHandler = new HttpClientHandler
             {
                 ClientCertificateOptions = ClientCertificateOption.Manual,
@@ -113,26 +111,26 @@ namespace JohnsonControls.Metasys.BasicServices
         {
             if ((ids != null) && (ids.Count() > 0))
             {
-                var body = new Newtonsoft.Json.Linq.JObject
+                var body = new JsonObject
                 {
-                    { "method", "GET" }
+                    ["method"] = "GET"
                 };
-                var requests = new Newtonsoft.Json.Linq.JArray();
+                var requests = new JsonArray();
 
-                // Concatenate batch segment to use batch request and prepare the list of requests  
+                // Concatenate batch segment to use batch request and prepare the list of requests
                 int index = 1;
                 foreach (var i in ids)
                 {
-                    var request = new Newtonsoft.Json.Linq.JObject
+                    var request = new JsonObject
                     {
-                        { "id", index.ToString() },
-                        { "relativeUrl", i.ToString() + "/attributes/presentValue" }
+                        ["id"] = index.ToString(),
+                        ["relativeUrl"] = i.ToString() + "/attributes/presentValue"
                     };
 
                     requests.Add(request);
                     index += 1;
                 }
-                body.Add("requests", requests);
+                body["requests"] = requests;
 
                 var subscription = new Subscription
                 {
@@ -173,7 +171,7 @@ namespace JohnsonControls.Metasys.BasicServices
             _isDisposed = true;
             try
             {
-                // networking issues can cause a delayed exception                
+                // networking issues can cause a delayed exception
                 _source.Dispose();
             }
             catch (Exception ex)
@@ -236,7 +234,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <inheritdoc/>
         public async Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string> query = null, dynamic body = null)
         {
-            string bodyContent = body != null ? JsonConvert.SerializeObject(body) : null;
+            string bodyContent = body != null ? JsonSerializer.Serialize(body) : null;
             string subscriptionInfoId = "";
             try
             {
@@ -244,12 +242,12 @@ namespace JohnsonControls.Metasys.BasicServices
                                      ? new StringContent(bodyContent, Encoding.UTF8, "application/json")
                                      : null;
 
-                HttpResponseMessage response = await _serverUrl
+                var response = (await _serverUrl
                     .AppendPathSegment(relativeUrl)
                     .SetQueryParams(query)
                     .WithHeader("METASYS-SUBSCRIBE", _streamId)
                     .WithOAuthBearerToken(Token)
-                    .SendAsync(new HttpMethod(method), content);
+                    .SendAsync(new HttpMethod(method), content)).ResponseMessage;
 
                 response.EnsureSuccessStatusCode();
 
@@ -313,10 +311,10 @@ namespace JohnsonControls.Metasys.BasicServices
                 Token = accessToken.Token.Replace("Bearer ", "");
             }
 
-            HttpResponseMessage response = await _serverUrl
+            var response = (await _serverUrl
                         .AppendPathSegments("api", Version, "stream", "keepalive")
                         .WithOAuthBearerToken(Token)
-                        .SendAsync(HttpMethod.Get);
+                        .SendAsync(HttpMethod.Get)).ResponseMessage;
 
             response.EnsureSuccessStatusCode();
         }
@@ -337,14 +335,14 @@ namespace JohnsonControls.Metasys.BasicServices
 
             _timer.Elapsed += async (object sender, ElapsedEventArgs e) =>
             {
-                // _logger.LogDebug($"Trying to refresh the connection  for the user on server {_serverUrl}");    
+                // _logger.LogDebug($"Trying to refresh the connection  for the user on server {_serverUrl}");
                 //var refreshToken = await _tokenProvider.GetRefreshTokenAsync(_token);
                 //_token = refreshToken.AccessToken;
 
-                HttpResponseMessage response = await _serverUrl
+                var response = (await _serverUrl
                                         .AppendPathSegments("api", Version, "stream", "keepalive")
                                         .WithOAuthBearerToken(Token)
-                                        .SendAsync(HttpMethod.Get);
+                                        .SendAsync(HttpMethod.Get)).ResponseMessage;
 
                 response.EnsureSuccessStatusCode();
             };
@@ -400,8 +398,8 @@ namespace JohnsonControls.Metasys.BasicServices
 
         private async Task HandleActivitySubscriptionAsync(EventSourceMessageEventArgs e)
         {
-            dynamic alarm = JsonConvert.DeserializeObject<ExpandoObject>(e.Message);
-            var subscriptionId = alarm.subscriptionIds[0]; // FIX me, could get multiple subscription id on a message
+            var alarm = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(e.Message);
+            var subscriptionId = alarm["subscriptionIds"][0].GetString(); // FIX me, could get multiple subscription id on a message
             var newAlarm = new StreamMessage(e.Event, e.Message);
             if (!_subscriptionIdToRequestIdMap.ContainsKey(subscriptionId))
             {
@@ -411,7 +409,7 @@ namespace JohnsonControls.Metasys.BasicServices
             newAlarm.RequestId = _subscriptionIdToRequestIdMap[subscriptionId];
             newAlarm.StreamId = e.Id;
             newAlarm.SubscriptionId = subscriptionId;
-            _ = JsonConvert.SerializeObject(newAlarm);
+            _ = JsonSerializer.Serialize(newAlarm);
 
             // _logger.LogDebug($"Writing Activity to channel...");
 
@@ -420,14 +418,14 @@ namespace JohnsonControls.Metasys.BasicServices
 
         private async Task HandleAttibuteValueSubscriptionAsync(EventSourceMessageEventArgs e)
         {
-            var covObjects = JsonConvert.DeserializeObject<ExpandoObject>(e.Message);
-            foreach (KeyValuePair<string, object> kvp in covObjects)
+            var covObjects = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(e.Message);
+            foreach (KeyValuePair<string, JsonElement> kvp in covObjects)
             {
                 if (kvp.Key.ToLower().Equals("item"))
                 {
-                    var expandoDict = kvp.Value as IDictionary<string, object>;
-                    var objectId = (expandoDict.ContainsKey("id")) ? expandoDict["id"] : null;
-                    var attrId = expandoDict.Keys.FirstOrDefault(propName => propName != "id" && propName != "itemReference");
+                    var itemDict = kvp.Value.EnumerateObject().ToDictionary(p => p.Name, p => (object)p.Value.ToString());
+                    var objectId = (itemDict.ContainsKey("id")) ? itemDict["id"] : null;
+                    var attrId = itemDict.Keys.FirstOrDefault(propName => propName != "id" && propName != "itemReference");
                     if (!string.IsNullOrEmpty(attrId) && _objectAndAttrToRequestIdsMap.ContainsKey($"{objectId}:{attrId}"))
                     {
                         foreach (var requestId in _objectAndAttrToRequestIdsMap[$"{objectId}:{attrId}"])
@@ -452,12 +450,12 @@ namespace JohnsonControls.Metasys.BasicServices
         private async Task HandleAttibuteValueSubscription2Async(EventSourceMessageEventArgs e)
         {
             String msg = e.Message;
-            JObject covObjects = JObject.Parse(msg);
+            JsonObject covObjects = JsonNode.Parse(msg) as JsonObject;
             if (covObjects != null)
             {
                 if (covObjects.ContainsKey("item") && (covObjects["item"] != null))
                 {
-                    String id = GetJObjectValue(covObjects, "item", "id");
+                    String id = GetJsonObjectValue(covObjects, "item", "id");
                     var objectId = (id != String.Empty) ? new Guid(id) : Guid.Empty;
                     var attrId = "presentValue";
                     if (!string.IsNullOrEmpty(attrId) && _objectAndAttrToRequestIdsMap.ContainsKey($"{objectId}:{attrId}"))
@@ -479,7 +477,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 }
             }
         }
-        private string GetJObjectValue(JObject jObj, string group, string field)
+        private string GetJsonObjectValue(JsonObject jObj, string group, string field)
         {
             string res = string.Empty;
             try
@@ -488,11 +486,11 @@ namespace JohnsonControls.Metasys.BasicServices
                 {
                     if (jObj.ContainsKey(group) && (jObj[group] != null))
                     {
-                        JObject grp = (JObject)jObj[group];
+                        JsonObject grp = (JsonObject)jObj[group];
 
                         if ((grp.ContainsKey(field)) && (grp[field] != null))
                         {
-                            res = grp[field].Value<string>();
+                            res = (string)grp[field];
                         }
                     };
                 };
@@ -568,7 +566,7 @@ namespace JohnsonControls.Metasys.BasicServices
         private async Task HandleHelloEventAsync(EventSourceMessageEventArgs e)
         {
             // _logger.LogDebug($"Got a hello with streamId {e.Message} from server {_serverUrl}");
-            _streamId = Newtonsoft.Json.Linq.JToken.Parse(e.Message).ToString();
+            _streamId = JsonNode.Parse(e.Message).ToJsonString();
             var st = new StreamMessage(e.Event, e.Message);
             await _channel.Writer.WriteAsync(st);
             SubscribeAllRequest();
@@ -616,7 +614,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 if (!string.IsNullOrEmpty(bodyContent))
                 {
-                    var attributeBatch = JsonConvert.DeserializeObject<AttributeBatchModel>(bodyContent);
+                    var attributeBatch = JsonSerializer.Deserialize<AttributeBatchModel>(bodyContent);
                     foreach (var request in attributeBatch.Requests)
                     {
                         var pieces = request.RelativeUrl.Split('/');
@@ -643,7 +641,7 @@ namespace JohnsonControls.Metasys.BasicServices
         {
             DateTime now = DateTime.UtcNow;
             TimeSpan delay = expireTime - now.AddSeconds(10); // minimum renew gap of 10 sec in advance
-            // Renew one minute before expiration if there is more than one minute time 
+            // Renew one minute before expiration if there is more than one minute time
             if (delay > new TimeSpan(0, 1, 0))
             {
                 delay.Subtract(new TimeSpan(0, 1, 0));

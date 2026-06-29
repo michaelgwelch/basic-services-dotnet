@@ -1,14 +1,13 @@
-﻿using Flurl;
+using Flurl;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace JohnsonControls.Metasys.BasicServices
@@ -112,7 +111,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Return Metasys Object representation from a generic JSON object.
         /// </summary>
         /// <returns></returns>
-        protected MetasysObject ToMetasysObject(JToken item, ApiVersion version, MetasysObjectTypeEnum? objectType = null)
+        protected MetasysObject ToMetasysObject(JsonNode item, ApiVersion version, MetasysObjectTypeEnum? objectType = null)
         {
             Version = version;
             return new MetasysObject(item, Version, null, type: objectType);
@@ -121,7 +120,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Return Metasys Object representation from a generic JSON object List.
         /// </summary>
         /// <returns></returns>
-        protected List<MetasysObject> ToMetasysObject(List<JToken> items, ApiVersion version, MetasysObjectTypeEnum? type = null)
+        protected List<MetasysObject> ToMetasysObject(List<JsonNode> items, ApiVersion version, MetasysObjectTypeEnum? type = null)
         {
             Version = version;
             List<MetasysObject> objects = new List<MetasysObject>();
@@ -136,7 +135,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Return Network Device representation from a generic JSON object.
         /// </summary>
         /// <returns></returns>
-        protected NetworkDevice ToNetworkDevice(JToken item, ApiVersion version)
+        protected NetworkDevice ToNetworkDevice(JsonNode item, ApiVersion version)
         {
             Version = version;
             return new NetworkDevice(item, Version);
@@ -146,7 +145,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Return Network Device representation from a generic JSON object List.
         /// </summary>
         /// <returns></returns>
-        protected List<NetworkDevice> ToNetworkDevice(List<JToken> items, ApiVersion version)
+        protected List<NetworkDevice> ToNetworkDevice(List<JsonNode> items, ApiVersion version)
         {
             Version = version;
             List<NetworkDevice> objects = new List<NetworkDevice>();
@@ -220,7 +219,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 return null;
             }
-            List<TreeObject> objects = new List<TreeObject>() { }; // Contains the couple of parent/children JToken
+            List<TreeObject> objects = new List<TreeObject>() { }; // Contains the couple of parent/children JsonNode
             bool hasNext = true;
             int page = 1;
             if (parameters == null)
@@ -232,8 +231,8 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 hasNext = false;
                 parameters["page"] = page.ToString();
-                var response = await GetPagedResultsAsync<JToken>("objects", parameters, id, "objects").ConfigureAwait(false);
-                //List<JToken> listOfItems = response.Items;
+                var response = await GetPagedResultsAsync<JsonNode>("objects", parameters, id, "objects").ConfigureAwait(false);
+                //List<JsonNode> listOfItems = response.Items;
                 //if (Version > ApiVersion.v3)
                 //{
                 //    listOfItems = response.Items[0].Children("Items");
@@ -273,23 +272,23 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 var response = await Client.Request(new Url(resource)
                     .AppendPathSegment(pathSegment))
-                    .GetJsonAsync<JToken>()
+                    .GetJsonAsync<JsonNode>()
                     .ConfigureAwait(false);
                 try
                 {
                     if (Version < ApiVersion.v4)
                     {
                         // The response is a list of typeUrls, not the type data
-                        var list = response["items"] as JArray;
+                        var list = response["items"] as JsonArray;
                         foreach (var item in list)
                         {
                             try
                             {
-                                JToken typeToken = item;
+                                JsonNode typeToken = item;
                                 // Retrieve type token from url (when available) and construct Metasys Object Type
                                 if (item["typeUrl"] != null)
                                 {
-                                    var url = item["typeUrl"].Value<string>();
+                                    var url = (string)item["typeUrl"];
                                     typeToken = await GetWithFullUrl(url).ConfigureAwait(false);
                                 }
                                 var type = GetType(typeToken);
@@ -297,7 +296,7 @@ namespace JohnsonControls.Metasys.BasicServices
                             }
                             catch (System.ArgumentNullException e)
                             {
-                                throw new MetasysHttpParsingException(response.ToString(), e);
+                                throw new MetasysHttpParsingException(response.ToJsonString(), e);
                             }
                         }
                     }
@@ -305,14 +304,13 @@ namespace JohnsonControls.Metasys.BasicServices
                     {
                         var item = response["item"];
                         var members = item["members"];
-                        dynamic kvpList = JsonConvert.DeserializeObject<ExpandoObject>(members.ToString());
-                        foreach (KeyValuePair<string, object> kvp in kvpList)
+                        var kvpList = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(members.ToJsonString());
+                        foreach (var kvp in kvpList)
                         {
                             if (kvp.Key.Length > 0)
                             {
-                                var itm = kvp.Value as IDictionary<string, object>;
-                                String description = (itm.ContainsKey("name")) ? itm["name"].ToString() : String.Empty;
-                                int id = int.Parse((itm.ContainsKey("value")) ? itm["value"].ToString() : Convert.ToString(-1));
+                                String description = (kvp.Value.TryGetProperty("name", out var nameProp)) ? nameProp.GetString() : String.Empty;
+                                int id = int.Parse((kvp.Value.TryGetProperty("value", out var valueProp)) ? valueProp.ToString() : Convert.ToString(-1));
 
                                 var type = GetType(id, description, kvp.Key);
                                 types.Add(type);
@@ -322,7 +320,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 }
                 catch (System.NullReferenceException e)
                 {
-                    throw new MetasysHttpParsingException(response.ToString(), e);
+                    throw new MetasysHttpParsingException(response.ToJsonString(), e);
                 }
             }
             catch (FlurlHttpException e)
@@ -338,17 +336,17 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="typeToken"></param>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysObjectTypeException"></exception>
-        protected MetasysObjectType GetType(JToken typeToken)
+        protected MetasysObjectType GetType(JsonNode typeToken)
         {
             try
             {
                 if (typeToken != null || typeToken == null)
                 {
-                    //string description = (typeToken.Contains("description") && typeToken["description"] != null) ? typeToken["description"].Value<string>(): "";
-                    //int id = (typeToken.Contains("id") && typeToken["id"] != null) ?  typeToken["id"].Value<int>() : -1;
+                    //string description = (typeToken.Contains("description") && typeToken["description"] != null) ? (string)typeToken["description"]: "";
+                    //int id = (typeToken.Contains("id") && typeToken["id"] != null) ?  (int)typeToken["id"] : -1;
                     //string key = description.Length > 0 ? GetObjectTypeEnumeration(description) : "";
-                    string description = typeToken["description"].Value<string>();
-                    int id = typeToken["id"].Value<int>();
+                    string description = (string)typeToken["description"];
+                    int id = (int)typeToken["id"];
                     //string key = description.Length > 0 ? GetObjectTypeEnumeration(description) : "";
                     string key = GetObjectTypeEnumeration(description);
 
@@ -371,7 +369,7 @@ namespace JohnsonControls.Metasys.BasicServices
             catch (Exception e) when (e is System.ArgumentNullException
                 || e is System.NullReferenceException || e is System.FormatException)
             {
-                throw new MetasysObjectTypeException(typeToken.ToString(), e);
+                throw new MetasysObjectTypeException(typeToken.ToJsonString(), e);
             }
         }
 
@@ -406,21 +404,20 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 var response = await Client.Request(new Url("enumerations")
                     .AppendPathSegment(enumerationKey))
-                    .GetJsonAsync<JToken>()
+                    .GetJsonAsync<JsonNode>()
                     .ConfigureAwait(false);
                 try
                 {
                     var item = response["item"];
                     var members = item["members"];
-                    dynamic kvpList = JsonConvert.DeserializeObject<ExpandoObject>(members.ToString());
-                    foreach (KeyValuePair<string, object> kvp in kvpList)
+                    var kvpList = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(members.ToJsonString());
+                    foreach (var kvp in kvpList)
                     {
                         if (kvp.Key.Length > 0)
                         {
-                            var itm = kvp.Value as IDictionary<string, object>;
                             String key = kvp.Key;
-                            String name = (itm.ContainsKey("name")) ? itm["name"].ToString() : String.Empty;
-                            int value = int.Parse((itm.ContainsKey("value")) ? itm["value"].ToString() : Convert.ToString(-1));
+                            String name = (kvp.Value.TryGetProperty("name", out var nameProp)) ? nameProp.GetString() : String.Empty;
+                            int value = int.Parse((kvp.Value.TryGetProperty("value", out var valueProp)) ? valueProp.ToString() : Convert.ToString(-1));
 
                             var enumValue = new MetasysEnumValue(key, name, value);
                             enums.Add(enumValue);
@@ -429,7 +426,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 }
                 catch (System.NullReferenceException e)
                 {
-                    throw new MetasysHttpParsingException(response.ToString(), e);
+                    throw new MetasysHttpParsingException(response.ToJsonString(), e);
                 }
             }
             catch (FlurlHttpException e)
@@ -485,13 +482,13 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <param name="url"></param>
         /// <exception cref="MetasysHttpException"></exception>
-        protected async Task<JToken> GetWithFullUrl(string url)
+        protected async Task<JsonNode> GetWithFullUrl(string url)
         {
             string requestUrl = url.Replace(Client.BaseUrl, "");
             try
             {
                 var item = await Client.Request(requestUrl)
-                    .GetJsonAsync<JToken>()
+                    .GetJsonAsync<JsonNode>()
                     .ConfigureAwait(false);
                 return item;
             }
@@ -503,19 +500,20 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <summary>
-        /// Parses a JToken containing a string and returns the value as an <see cref="ObjectId"/>.
+        /// Parses a JsonNode containing a string and returns the value as an <see cref="ObjectId"/>.
         /// </summary>
         /// <param name="token"></param>
         /// <exception cref="MetasysGuidException"></exception>
         /// <returns>The <see cref="ObjectId"/> contained in the token.</returns>
-        protected ObjectId ParseObjectIdentifier(JToken token)
+        protected ObjectId ParseObjectIdentifier(JsonNode token)
         {
+            if (token == null) throw new MetasysGuidException("null", new ArgumentNullException());
             string str = null;
             try
             {
-                if (token.Type == JTokenType.String)
+                if (token is System.Text.Json.Nodes.JsonValue)
                 {
-                    str = token.Value<string>();
+                    str = (string)token;
                     return str;
                 }
             }
@@ -528,7 +526,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 throw new MetasysGuidException(str, e);
             }
 
-            throw new MetasysGuidException(token.ToString(), null);
+            throw new MetasysGuidException(token.ToJsonString(), null);
         }
 
         /// <summary>
@@ -542,10 +540,10 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpTimeoutException"></exception>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpNotFoundException"></exception>
-        protected async Task<JToken> GetRequestAsync(string resource, Dictionary<string, string> parameters = null, params object[] pathSegments)
+        protected async Task<JsonNode> GetRequestAsync(string resource, Dictionary<string, string> parameters = null, params object[] pathSegments)
         {
 
-            JToken response = null;
+            JsonNode response = null;
             // Create URL with base resource
             Url url = new Url(resource);
             // Concatenate segments with base resource url
@@ -563,7 +561,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 //Client.WithTimeout(300);
                 response = await Client.Request(url)
-                .GetJsonAsync<JToken>()
+                .GetJsonAsync<JsonNode>()
                 .ConfigureAwait(false);
             }
             catch (FlurlHttpException e)
@@ -600,11 +598,11 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpTimeoutException"></exception>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpNotFoundException"></exception>
-        protected async Task<List<JToken>> GetAllAvailablePagesAsync(string resource, Dictionary<string, string> parameters = null, params string[] pathSegments)
+        protected async Task<List<JsonNode>> GetAllAvailablePagesAsync(string resource, Dictionary<string, string> parameters = null, params string[] pathSegments)
         {
             bool hasNext = true;
             bool buildAggregateResponse = true;
-            List<JToken> aggregatedResponse = new List<JToken>();
+            List<JsonNode> aggregatedResponse = new List<JsonNode>();
 
             int page = 1;
             int pageSize = 1000;
@@ -632,7 +630,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 hasNext = false;
                 // Just overwrite page parameter
                 parameters["page"] = page.ToString();
-                var response = await GetPagedResultsAsync<JToken>(resource, parameters, pathSegments).ConfigureAwait(false);
+                var response = await GetPagedResultsAsync<JsonNode>(resource, parameters, pathSegments).ConfigureAwait(false);
                 var total = response.Total;
                 if (total > 0)
                 {
@@ -665,7 +663,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 // Perform logging only when enabled by BasicServiceProvider Settings.
                 Log.Logger.Error(e.Message);
             }
-            if (e.Call.Response != null && e.Call.Response.StatusCode == HttpStatusCode.NotFound)
+            if (e.Call.Response != null && (HttpStatusCode)e.Call.Response.StatusCode == HttpStatusCode.NotFound)
             {
                 throw new MetasysHttpNotFoundException(e);
             }
@@ -690,8 +688,19 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public static Dictionary<string, string> ToDictionary(object obj)
         {
-            var json = JsonConvert.SerializeObject(obj);
-            var dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            var json = JsonSerializer.Serialize(obj);
+            using var jsonDoc = JsonDocument.Parse(json);
+            var dictionary = new Dictionary<string, string>();
+            foreach (var prop in jsonDoc.RootElement.EnumerateObject())
+            {
+                string value = prop.Value.ValueKind switch
+                {
+                    JsonValueKind.Null => null,
+                    JsonValueKind.String => prop.Value.GetString(),
+                    _ => prop.Value.GetRawText()
+                };
+                dictionary[prop.Name] = value;
+            }
             // Check and in case removes some items not allowed for a specific request
             if (dictionary.TryGetValue("ActivityType", out string activityType))
             {
@@ -713,7 +722,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="resources"></param>
         /// <param name="paths"></param>
         /// <returns></returns>
-        protected async Task<JToken> GetBatchRequestAsync(string endpoint, IEnumerable<ObjectId> ids, IEnumerable<string> resources, params string[] paths)
+        protected async Task<JsonNode> GetBatchRequestAsync(string endpoint, IEnumerable<ObjectId> ids, IEnumerable<string> resources, params string[] paths)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -732,14 +741,14 @@ namespace JohnsonControls.Metasys.BasicServices
                     objectsRequests.Add(new ObjectRequest { Id = id.ToString() + '_' + r, RelativeUrl = relativeUrl });
                 }
             }
-            JToken responseToken = null;
+            JsonNode responseToken = null;
             try
             {
-                // Post the list of requests and return responses as JToken
+                // Post the list of requests and return responses as JsonNode
                 var response = await Client.Request(url)
                                             .PostJsonAsync(new BatchRequest { Method = "GET", Requests = objectsRequests })
                                             .ConfigureAwait(false);
-                responseToken = JToken.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
             }
             catch (FlurlHttpException e)
             {
@@ -755,7 +764,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="requests"></param>
         /// <param name="paths"></param>
         /// <returns></returns>
-        protected async Task<JToken> PostBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, params string[] paths)
+        protected async Task<JsonNode> PostBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, params string[] paths)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -791,15 +800,15 @@ namespace JohnsonControls.Metasys.BasicServices
                 //Body = new ObjectBody {Text = r.Resource }
             }
 
-            JToken responseToken = null;
+            JsonNode responseToken = null;
             try
             {
-                // Post the list of requests and return responses as JToken
+                // Post the list of requests and return responses as JsonNode
                 var response = await Client.Request(url)
                                             .PostJsonAsync(new BatchRequest { Method = "POST", Requests = objectsRequests })
                                             .ConfigureAwait(false);
 
-                responseToken = JToken.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
             }
             catch (FlurlHttpException e)
             {
@@ -816,7 +825,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="paths"></param>
         /// <returns></returns>
 
-        protected async Task<JToken> PutBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, params string[] paths)
+        protected async Task<JsonNode> PutBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, params string[] paths)
         {
             Boolean isDiscard = false;
             // Create URL with base resource
@@ -854,27 +863,27 @@ namespace JohnsonControls.Metasys.BasicServices
                 //Body = new ObjectBody {Text = r.Resource }
             }
 
-            JToken responseToken = null;
+            JsonNode responseToken = null;
             try
             {
                 if (isDiscard && Version == ApiVersion.v4)
                 {
-                    // Post the list of requests and return responses as JToken
+                    // Post the list of requests and return responses as JsonNode
                     var response = await Client.Request(url)
                                                 .PostJsonAsync(new BatchRequest { Method = "PATCH", Requests = objectsRequests })
                                                 .ConfigureAwait(false);
 
-                    responseToken = JToken.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                    responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
 
                 }
                 else
                 {
-                    // Post the list of requests and return responses as JToken
+                    // Post the list of requests and return responses as JsonNode
                     var response = await Client.Request(url)
                                                 .PostJsonAsync(new BatchRequest { Method = "PUT", Requests = objectsRequests })
                                                 .ConfigureAwait(false);
 
-                    responseToken = JToken.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                    responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
                 }
             }
             catch (FlurlHttpException e)
@@ -890,7 +899,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="endpoint"></param>
         /// <param name="requests"></param>
         /// <returns></returns>
-        protected async Task<JToken> PatchBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests)
+        protected async Task<JsonNode> PatchBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -955,16 +964,16 @@ namespace JohnsonControls.Metasys.BasicServices
                 });
             }
 
-            JToken responseToken = null;
+            JsonNode responseToken = null;
             try
             {
                 if (Version > ApiVersion.v4)
                 {
-                    // Post the list of requests and return responses as JToken
+                    // Post the list of requests and return responses as JsonNode
                     var response = await Client.Request(url)
                                                 .PostJsonAsync(new BatchRequest { Method = "PATCH", Requests = objectsRequests })
                                                 .ConfigureAwait(false);
-                    responseToken = JToken.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                    responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
                 }
                 else
                 {

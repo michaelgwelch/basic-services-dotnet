@@ -1,6 +1,6 @@
 ﻿using Flurl.Http;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json.Nodes;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -97,17 +97,17 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private IEnumerable<Result> ToResult(JToken response)
+        private IEnumerable<Result> ToResult(JsonNode response)
         {
             List<Result> results = new List<Result>();
-            foreach (var r in response["responses"])
+            foreach (var r in response["responses"]!.AsArray())
             {
-                var respIds = r["id"].Value<string>().Split('_');
+                var respIds = ((string)r["id"])!.Split('_');
 
                 Result resultItem = new Result
                 {
                     Id = new Guid(respIds[0]),
-                    Status = r["status"].Value<int>(),
+                    Status = (int)r["status"],
                     Annotation = respIds[1]
                 };
                 results.Add(resultItem);

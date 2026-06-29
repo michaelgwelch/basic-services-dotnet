@@ -1,13 +1,14 @@
 using Flurl;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -187,14 +188,14 @@ namespace JohnsonControls.Metasys.BasicServices
                     Timeout = TimeSpan.FromSeconds(timeout)
                 };
 
-                FlurlHttp.Configure(settings => settings.Timeout = TimeSpan.FromSeconds(timeout));
                 Client = new FlurlClient(httpClient);
+                Client.Settings.Timeout = TimeSpan.FromSeconds(timeout);
             }
             else
             {
-                FlurlHttp.Configure(settings => settings.Timeout = TimeSpan.FromSeconds(timeout));
                 Client = new FlurlClient($"https://{hostname}"
                     .AppendPathSegments("api", Version));
+                Client.Settings.Timeout = TimeSpan.FromSeconds(timeout);
             }
             // reset Access Token
             AccessToken = null;
@@ -264,7 +265,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 var response = await Client.Request("login")
                     .PostJsonAsync(new { username, password })
-                    .ReceiveJson<JToken>()
+                    .ReceiveJson<JsonNode>()
                     .ConfigureAwait(false);
 
                 this.RefreshToken = true;
@@ -323,7 +324,7 @@ namespace JohnsonControls.Metasys.BasicServices
             try
             {
                 var response = await Client.Request("refreshToken")
-                                                    .GetJsonAsync<JToken>()
+                                                    .GetJsonAsync<JsonNode>()
                                                     .ConfigureAwait(false);
                 // Since it's a refresh, get issue info from the current token
                 CreateAccessToken(AccessToken.Issuer, AccessToken.IssuedTo, response);
@@ -353,13 +354,13 @@ namespace JohnsonControls.Metasys.BasicServices
             try
             {
                 var response = await Client.Request("refreshToken")
-                                                    .GetJsonAsync<JToken>()
+                                                    .GetJsonAsync<JsonNode>()
                                                     .ConfigureAwait(false);
 
                 var accessTokenValue = response["accessToken"];
                 var expires = response["expires"];
-                var accessToken = $"Bearer {accessTokenValue.Value<string>()}";
-                var date = expires.Value<DateTime>();
+                var accessToken = $"Bearer {(string)accessTokenValue}";
+                var date = expires.GetValue<DateTime>();
                 this.AccessToken = new AccessToken(AccessToken.Issuer, AccessToken.IssuedTo, accessToken, date);
                 Client.Headers.Remove("Authorization");
                 Client.Headers.Add("Authorization", this.AccessToken.Token);
@@ -570,20 +571,20 @@ namespace JohnsonControls.Metasys.BasicServices
             // Returns cached value when available, otherwise perform request
             if (!IdentifiersDictionary.ContainsKey(normalizedItemReference))
             {
-                JToken response = null;
+                JsonNode response = null;
                 try
                 {
                     response = await Client.Request("objectIdentifiers")
                         .SetQueryParam("fqr", itemReference)
-                        .GetJsonAsync<JToken>()
+                        .GetJsonAsync<JsonNode>()
                         .ConfigureAwait(false);
                     // Stores value for caching and return
                     IdentifiersDictionary[normalizedItemReference] = ParseObjectIdentifier(response);
                 }
                 catch (FlurlHttpException e)
                 {
-                    if (e.Call.HttpStatus == HttpStatusCode.BadRequest && response != null && response["message"] != null
-                        && response["message"].Value<string>().Contains("not found"))
+                    if (e.StatusCode == (int)HttpStatusCode.BadRequest && response != null && response["message"] != null
+                        && ((string)response["message"]).Contains("not found"))
                     {
                         // Metasys respond with "Identifier is not found." message, so make exception explicit
                         throw new MetasysHttpNotFoundException(e);
@@ -607,19 +608,19 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 var token = await Client.Request(new Url("objects")
                     .AppendPathSegments(id, "commands"))
-                    .GetJsonAsync<JToken>()
+                    .GetJsonAsync<JsonNode>()
                     .ConfigureAwait(false);
 
-                if (!(token is JArray) && token["items"] != null)
+                if (!(token is JsonArray) && token["items"] != null)
                 {
                     // Since API v3 response is wrapped in items property
                     token = token["items"];
                 }
                 List<Command> commands = new List<Command>();
 
-                if (token is JArray array)
+                if (token is JsonArray array)
                 {
-                    foreach (JObject command in array.Cast<JObject>())
+                    foreach (JsonObject command in array.Cast<JsonObject>())
                     {
                         try
                         {
@@ -628,7 +629,7 @@ namespace JohnsonControls.Metasys.BasicServices
                         }
                         catch (Exception e)
                         {
-                            throw new MetasysCommandException(command.ToString(), e);
+                            throw new MetasysCommandException(command.ToJsonString(), e);
                         }
                     }
                 }
@@ -668,12 +669,12 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <inheritdoc/>
         public async Task<Variant> ReadPropertyAsync(ObjectId id, string attributeName)
         {
-            JToken response = null; Variant result = new Variant();
+            JsonNode response = null; Variant result = new Variant();
             try
             {
                 response = await Client.Request(new Url("objects")
                     .AppendPathSegments(id, "attributes", attributeName))
-                    .GetJsonAsync<JToken>()
+                    .GetJsonAsync<JsonNode>()
                     .ConfigureAwait(false);
                 result = new Variant(id, response, attributeName, Culture, Version);
             }
@@ -683,7 +684,7 @@ namespace JohnsonControls.Metasys.BasicServices
             }
             catch (System.NullReferenceException e)
             {
-                throw new MetasysPropertyException(response.ToString(), e);
+                throw new MetasysPropertyException(response?.ToJsonString(), e);
             }
             return result;
         }
@@ -879,7 +880,8 @@ namespace JohnsonControls.Metasys.BasicServices
             DateTime? serverTime = null;
             try
             {
-                HttpResponseMessage response = await Client.Request("refreshToken").GetAsync().ConfigureAwait(false);
+                var flurlResponse = await Client.Request("refreshToken").GetAsync().ConfigureAwait(false);
+                var response = flurlResponse.ResponseMessage;
                 var date = response.Headers.Date ?? throw new MetasysHttpException("Cannot read date time from HTTP response of Metasys Server.", response.ToString());
                 serverTime = date.UtcDateTime;
             }
@@ -893,7 +895,7 @@ namespace JohnsonControls.Metasys.BasicServices
         #endregion
 
         /// <summary>
-        /// Creates a new AccessToken from a JToken and sets the client's authorization header if successful.
+        /// Creates a new AccessToken from a JsonNode and sets the client's authorization header if successful.
         /// On failure leaves the AccessToken and authorization header in previous state.
         /// </summary>
         /// <param name="token"></param>
@@ -901,14 +903,14 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="issuedTo"></param>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysTokenException"></exception>
-        private void CreateAccessToken(string issuer, string issuedTo, JToken token)
+        private void CreateAccessToken(string issuer, string issuedTo, JsonNode token)
         {
             try
             {
-                var accessTokenValue = token["accessToken"];
+                var accessTokenValue = token["accessToken"] ?? throw new ArgumentNullException("accessToken");
                 var expires = token["expires"];
-                var accessToken = $"Bearer {accessTokenValue.Value<string>()}";
-                var date = expires.Value<DateTime>();
+                var accessToken = $"Bearer {(string)accessTokenValue}";
+                var date = expires.GetValue<DateTime>();
                 this.AccessToken = new AccessToken(issuer, issuedTo, accessToken, date);
                 Client.Headers.Remove("Authorization");
                 Client.Headers.Add("Authorization", this.AccessToken.Token);
@@ -927,7 +929,7 @@ namespace JohnsonControls.Metasys.BasicServices
             catch (Exception e) when (e is System.ArgumentNullException
                 || e is System.NullReferenceException || e is System.FormatException)
             {
-                throw new MetasysTokenException(token.ToString(), e);
+                throw new MetasysTokenException(token.ToJsonString(), e);
             }
         }
 
@@ -1048,17 +1050,17 @@ namespace JohnsonControls.Metasys.BasicServices
         ///// <param name="typeToken"></param>
         ///// <exception cref="MetasysHttpException"></exception>
         ///// <exception cref="MetasysObjectTypeException"></exception>
-        //private MetasysObjectType GetType(JToken typeToken)
+        //private MetasysObjectType GetType(JsonNode typeToken)
         //{
         //    try
         //    {
         //        if (typeToken != null || typeToken == null)
         //        {
-        //            //string description = (typeToken.Contains("description") && typeToken["description"] != null) ? typeToken["description"].Value<string>(): "";
-        //            //int id = (typeToken.Contains("id") && typeToken["id"] != null) ?  typeToken["id"].Value<int>() : -1;
+        //            //string description = (typeToken.Contains("description") && typeToken["description"] != null) ? (string)typeToken["description"]: "";
+        //            //int id = (typeToken.Contains("id") && typeToken["id"] != null) ?  (int)typeToken["id"] : -1;
         //            //string key = description.Length > 0 ? GetObjectTypeEnumeration(description) : "";
-        //            string description = typeToken["description"].Value<string>();
-        //            int id = typeToken["id"].Value<int>();
+        //            string description = (string)typeToken["description"];
+        //            int id = (int)typeToken["id"];
         //            //string key = description.Length > 0 ? GetObjectTypeEnumeration(description) : "";
         //            string key = GetObjectTypeEnumeration(description);
 
@@ -1081,7 +1083,7 @@ namespace JohnsonControls.Metasys.BasicServices
         //    catch (Exception e) when (e is System.ArgumentNullException
         //        || e is System.NullReferenceException || e is System.FormatException)
         //    {
-        //        throw new MetasysObjectTypeException(typeToken.ToString(), e);
+        //        throw new MetasysObjectTypeException(typeToken.ToJsonString(), e);
         //    }
         //}
 
@@ -1127,20 +1129,20 @@ namespace JohnsonControls.Metasys.BasicServices
         //}
 
         /// <summary>
-        /// Convert a JToken batch request response into VariantMultiple.
+        /// Convert a JsonNode batch request response into VariantMultiple.
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private IEnumerable<VariantMultiple> ToVariantMultiples(JToken response)
+        private IEnumerable<VariantMultiple> ToVariantMultiples(JsonNode response)
         {
             List<VariantMultiple> multiples = new List<VariantMultiple>();
-            foreach (var r in response["responses"])
+            foreach (var r in response["responses"].AsArray())
             {
-                var respIds = r["id"].Value<string>().Split('_');
+                var respIds = ((string)r["id"]).Split('_');
                 var objId = new ObjectId(respIds[0]);
                 string attr = respIds[1];
                 List<Variant> values = new List<Variant>();
-                if (r["status"].Value<int>() == 200)
+                if ((int)r["status"] == 200)
                 {
                     values.Add(new Variant(objId, r["body"], attr, Culture, Version));
                 } // Don't add the variant to the list if the response is not successful
@@ -1175,9 +1177,10 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 if (Version > ApiVersion.v3)
                 {
-                    JArray arrayValues = new JArray(values);
-                    JProperty propParams = new JProperty("parameters", arrayValues);
-                    JObject jsonValues = new JObject(propParams);
+                    var jsonValues = new JsonObject
+                    {
+                        ["parameters"] = new JsonArray(values.Select(v => JsonValue.Create(v)).ToArray<JsonNode>())
+                    };
 
                     var response = await Client.Request(new Url("objects")
                                                                 .AppendPathSegments(id, "commands", command))
@@ -1214,7 +1217,8 @@ namespace JohnsonControls.Metasys.BasicServices
                 var headers = requestMessage.Headers.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
                 flurlRequest.WithHeaders(headers);
 
-                response = await flurlRequest.SendAsync(requestMessage.Method, requestMessage.Content, cancellationToken, completionOption).ConfigureAwait(false);
+                var flurlResponse = await flurlRequest.SendAsync(requestMessage.Method, requestMessage.Content, completionOption, cancellationToken).ConfigureAwait(false);
+                response = flurlResponse.ResponseMessage;
             }
             catch (FlurlHttpException e)
             {

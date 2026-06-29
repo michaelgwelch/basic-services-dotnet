@@ -1,5 +1,5 @@
-﻿using JohnsonControls.Metasys.BasicServices;
-using Newtonsoft.Json;
+using JohnsonControls.Metasys.BasicServices;
+using System.Text.Json;
 using NUnit.Framework;
 using System.Linq;
 using System.Net.Http;
@@ -18,10 +18,10 @@ namespace MetasysServices.Tests
             var response = @"{
             ""total"": 0,
             ""next"": null,
-            ""previous"": null, 
+            ""previous"": null,
             ""items"": [],
             ""self"": ""https://hostname/api/v2/audits?page=1&pageSize=100&excludeDiscarded=false&sort=-creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
             var audits = client.Audits.Get(new AuditFilter { }); // No filter
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/audits")
@@ -39,14 +39,14 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Audit + @"],
             ""self"": ""https://hostname/api/v2/audits?page=1&pageSize=100&excludeDiscarded=false&sort=-creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
 
             var audits = client.Audits.Get(AuditFilter);
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/audits")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            var expected = JsonConvert.DeserializeObject<Audit>(Audit);
+            var expected = JsonSerializer.Deserialize<Audit>(Audit, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.AreEqual(expected, audits.Items.ElementAt(0));
         }
 
@@ -59,14 +59,14 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Audit + @"],
             ""self"": ""https://hostname/api/v2/audits?page=1&pageSize=100&excludeDiscarded=false&sort=-creationTime""
-            ";
+            }";
             httpTest
              .RespondWith(response);
             var audits = client.Audits.Get(AuditFilter);
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/audits")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            var expected = JsonConvert.DeserializeObject<Audit>(Audit);
+            var expected = JsonSerializer.Deserialize<Audit>(Audit, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.AreEqual(expected, audits.Items.ElementAt(0));
         }
 
@@ -79,7 +79,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [{}],
             ""self"": ""https://hostname/api/v2/audits?page=1&pageSize=100&excludeDiscarded=false&sort=-creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
             Assert.Throws<MetasysObjectException>(() => client.Audits.Get(new AuditFilter { }));
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/audits")
@@ -99,7 +99,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Audit + @"],
             ""self"": ""https://hostname/api/v2/audits?page=1&pageSize=100&excludeDiscarded=false&sort=-creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
 
             var e = Assert.Throws<MetasysObjectException>(() => client.Audits.Get(new AuditFilter { }));

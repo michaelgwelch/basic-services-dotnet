@@ -1,8 +1,8 @@
 using JohnsonControls.Metasys.BasicServices.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -105,7 +105,7 @@ namespace JohnsonControls.Metasys.BasicServices
         public bool IsReliable => ReliabilityEnumerationKey == Reliable;
 
         /// <summary>
-        /// The Metasys API version taken as a reference to process the JToken.
+        /// The Metasys API version taken as a reference to process the JsonNode.
         /// </summary>
         private ApiVersion apiVersion;
 
@@ -115,7 +115,7 @@ namespace JohnsonControls.Metasys.BasicServices
         {
         }
 
-        internal Variant(ObjectId id, JToken token, string attribute, CultureInfo cultureInfo, ApiVersion apiVersion)
+        internal Variant(ObjectId id, JsonNode token, string attribute, CultureInfo cultureInfo, ApiVersion apiVersion)
         {
             this.apiVersion = apiVersion;
             _CultureInfo = cultureInfo;
@@ -139,9 +139,9 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <summary>
-        /// Parses the JToken type and assigns values as specified in the MSSDA Bulletin.
+        /// Parses the JsonNode type and assigns values as specified in the MSSDA Bulletin.
         /// </summary>
-        private void ProcessToken(JToken token)
+        private void ProcessToken(JsonNode token)
         {
             if (token == null || token["item"] == null || token["item"][Attribute] == null)
             {
@@ -152,52 +152,42 @@ namespace JohnsonControls.Metasys.BasicServices
                 StringValue = ResourceManager.Localize(StringValueEnumerationKey, _CultureInfo);
                 return;
             }
-            JToken attributeToken = token["item"][Attribute];
-            // switch on attributeToken type and set the fields appropriately
-            switch (attributeToken.Type)
+            JsonNode attributeToken = token["item"][Attribute];
+            switch (attributeToken.GetValueKind())
             {
-                case JTokenType.Integer:
+                case JsonValueKind.Number:
                     ItemType = "numeric";
-                    NumericValue = attributeToken.Value<double>();
+                    NumericValue = attributeToken.GetValue<double>();
                     StringValue = NumericValue.ToString(_CultureInfo);
                     BooleanValue = Convert.ToBoolean(NumericValue);
                     ArrayValue = null;
                     break;
-                case JTokenType.Float:
-                    ItemType = "numeric";
-                    NumericValue = attributeToken.Value<double>();
-                    StringValue = NumericValue.ToString(_CultureInfo);
-                    BooleanValue = Convert.ToBoolean(NumericValue);
-                    break;
-                case JTokenType.String:
+                case JsonValueKind.String:
                     ItemType = "string";
                     NumericValue = 0;
-                    StringValueEnumerationKey = attributeToken.Value<string>();
+                    StringValueEnumerationKey = (string)attributeToken;
                     StringValue = ResourceManager.Localize(StringValueEnumerationKey, _CultureInfo);
                     break;
-                case JTokenType.Array:
+                case JsonValueKind.Array:
                     ProcessArray(attributeToken);
                     break;
-                case JTokenType.Boolean:
+                case JsonValueKind.True:
                     ItemType = "boolean";
-                    if ((bool)(attributeToken) == true)
-                    {
-                        NumericValue = 1;
-                        BooleanValue = true;
-                        StringValue = Convert.ToString(BooleanValue, _CultureInfo);
-                    }
-                    else
-                    {
-                        NumericValue = 0;
-                        BooleanValue = false;
-                        StringValue = Convert.ToString(BooleanValue, _CultureInfo);
-                    }
+                    NumericValue = 1;
+                    BooleanValue = true;
+                    StringValue = Convert.ToString(BooleanValue, _CultureInfo);
                     break;
-                case JTokenType.Object:
+                case JsonValueKind.False:
+                    ItemType = "boolean";
+                    NumericValue = 0;
+                    BooleanValue = false;
+                    StringValue = Convert.ToString(BooleanValue, _CultureInfo);
+                    break;
+                case JsonValueKind.Object:
                     // It is assumed the attribute read was the presentValue
                     if (apiVersion < ApiVersion.v3)
                     {
-                        // From v3 onwards presentValue is threated like other attributes and additional information are moved in Condition property.
+                        // From v3 onwards presentValue is treated like other attributes and additional information are moved in Condition property.
                         ProcessPresentValue(attributeToken);
                     }
                     else
@@ -215,17 +205,15 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
 
-        /// <summary>Parses a JArray and adds each item as a Variant.</summary>
-        private void ProcessArray(JToken token)
+        /// <summary>Parses a JsonArray and adds each item as a Variant.</summary>
+        private void ProcessArray(JsonNode token)
         {
-            JArray arr = JArray.Parse(token.ToString());
+            JsonArray arr = token.AsArray();
             ArrayValue = new Variant[arr.Count];
             int index = 0;
-            foreach (var item in arr.Children())
+            foreach (var item in arr)
             {
-                string json = "{\"item\": { }}";
-                var t = JToken.Parse(json);
-                t["item"][Attribute] = item;
+                var t = new JsonObject { ["item"] = new JsonObject { [Attribute] = item?.DeepClone() } };
                 ArrayValue[index] = new Variant(Id, t, Attribute, _CultureInfo, apiVersion);
                 index++;
             }
@@ -234,28 +222,26 @@ namespace JohnsonControls.Metasys.BasicServices
             StringValue = ResourceManager.Localize(StringValueEnumerationKey, _CultureInfo);
         }
 
-        /// <summary>Searches the JObject for reliability and priority fields and uses the field called "value" as value for result.</summary>
-        internal void ProcessPresentValue(JToken token)
+        /// <summary>Searches the JsonObject for reliability and priority fields and uses the field called "value" as value for result.</summary>
+        internal void ProcessPresentValue(JsonNode token)
         {
             if (Attribute.Equals("presentValue"))
             {
-                JToken valueToken = token["value"];
-                JToken reliabilityToken = token["reliability"];
-                JToken priorityToken = token["priority"];
+                JsonNode valueToken = token["value"];
+                JsonNode reliabilityToken = token["reliability"];
+                JsonNode priorityToken = token["priority"];
 
                 if (reliabilityToken != null)
                 {
-                    ReliabilityEnumerationKey = reliabilityToken.ToString();
+                    ReliabilityEnumerationKey = (string)reliabilityToken;
                     Reliability = ResourceManager.Localize(ReliabilityEnumerationKey, _CultureInfo);
                 }
                 if (priorityToken != null)
                 {
-                    PriorityEnumerationKey = priorityToken.ToString();
+                    PriorityEnumerationKey = (string)priorityToken;
                     Priority = ResourceManager.Localize(PriorityEnumerationKey, _CultureInfo);
                 }
-                string json = "{\"item\":{}}";
-                var t = JToken.Parse(json);
-                t["item"][Attribute] = valueToken;
+                var t = new JsonObject { ["item"] = new JsonObject { [Attribute] = valueToken?.DeepClone() } };
                 ProcessToken(t);
             }
             else
@@ -265,7 +251,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <summary>Retrieve non-normal conditions for the current attribute (if any). </summary>
-        internal void ProcessCondition(JToken token)
+        internal void ProcessCondition(JsonNode token)
         {
             var conditionToken = token["condition"];
             if (conditionToken == null)
@@ -277,17 +263,17 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 return; // condition is normal for this attribute
             }
-            JToken reliabilityToken = conditionToken["reliability"];
-            JToken priorityToken = conditionToken["priority"];
+            JsonNode reliabilityToken = conditionToken["reliability"];
+            JsonNode priorityToken = conditionToken["priority"];
 
             if (reliabilityToken != null)
             {
-                ReliabilityEnumerationKey = reliabilityToken.ToString();
+                ReliabilityEnumerationKey = (string)reliabilityToken;
                 Reliability = ResourceManager.Localize(ReliabilityEnumerationKey, _CultureInfo);
             }
             if (priorityToken != null)
             {
-                PriorityEnumerationKey = priorityToken.ToString();
+                PriorityEnumerationKey = (string)priorityToken;
                 Priority = ResourceManager.Localize(PriorityEnumerationKey, _CultureInfo);
             }
         }
@@ -371,7 +357,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

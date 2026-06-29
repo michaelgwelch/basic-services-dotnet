@@ -1,5 +1,5 @@
 ﻿using JohnsonControls.Metasys.BasicServices;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NUnit.Framework;
 using System.Linq;
 using System.Net.Http;
@@ -48,7 +48,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/alarms/{mockid}/annotations")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            var expected = JsonConvert.DeserializeObject<AlarmAnnotation>(AlarmAnnotation);
+            var expected = JsonSerializer.Deserialize<AlarmAnnotation>(AlarmAnnotation, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.AreEqual(expected, annotations.ElementAt(0));
         }
 

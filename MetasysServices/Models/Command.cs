@@ -1,10 +1,10 @@
-﻿using JohnsonControls.Metasys.BasicServices.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using JohnsonControls.Metasys.BasicServices.Utils;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -193,7 +193,7 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
 
-        internal Command(JToken token, CultureInfo cultureInfo, ApiVersion version)
+        internal Command(JsonNode token, CultureInfo cultureInfo, ApiVersion version)
         {
             if (version > ApiVersion.v3)
             {
@@ -205,14 +205,14 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
 
-        private void CreateCommand_2_3(JToken token, CultureInfo cultureInfo)
+        private void CreateCommand_2_3(JsonNode token, CultureInfo cultureInfo)
         {
             try
             {
-                JArray items;
+                JsonArray items;
                 _CultureInfo = cultureInfo;
-                CommandId = token["commandId"].Value<string>();
-                Title = token["title"].Value<string>();
+                CommandId = (string)token["commandId"];
+                Title = (string)token["title"];
                 TitleEnumerationKey = ResourceManager.GetCommandEnumeration(Title);
                 // Translate the title from en-US to specified culture.
                 string translatedTitle = ResourceManager.Localize(TitleEnumerationKey, _CultureInfo);
@@ -223,7 +223,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 }
 
                 Items = null;
-                items = token["items"] as JArray;
+                items = token["items"] as JsonArray;
 
                 List<Item> itemsList = new List<Item>();
                 if (items != null && items.Count > 0)
@@ -231,13 +231,13 @@ namespace JohnsonControls.Metasys.BasicServices
                     foreach (var item in items)
                     {
                         // Check if a value or an enum
-                        var enumSet = item["oneOf"] as JArray;
+                        var enumSet = item["oneOf"] as JsonArray;
                         if (enumSet == null)
                         {
-                            string iTitle = item["title"].Value<string>();
-                            string type = item["type"].Value<string>();
-                            double? maximum = (item["maximum"] != null) ? item["maximum"].Value<double?>() : null;
-                            double? minimum = (item["minimum"] != null) ? item["minimum"].Value<double?>() : null;
+                            string iTitle = (string)item["title"];
+                            string type = (string)item["type"];
+                            double? maximum = item["maximum"] != null ? item["maximum"].GetValue<double>() : (double?)null;
+                            double? minimum = item["minimum"] != null ? item["minimum"].GetValue<double>() : (double?)null;
                             //add the item
                             itemsList.Add(new Item(iTitle, type, minimum, maximum));
                         }
@@ -246,8 +246,8 @@ namespace JohnsonControls.Metasys.BasicServices
                             List<EnumerationItem> enumList = new List<EnumerationItem>();
                             foreach (var e in enumSet)
                             {
-                                string eTitle = e["title"].Value<string>();
-                                string eKey = e["const"].Value<string>();
+                                string eTitle = (string)e["title"];
+                                string eKey = (string)e["const"];
                                 // The title returned is an en-US value, translate the key
                                 string eTranslatedTitle = ResourceManager.Localize(eKey, _CultureInfo);
                                 if (eTranslatedTitle != eKey)
@@ -269,17 +269,17 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
 
-        private void CreateCommand_4(JToken token, CultureInfo cultureInfo)
+        private void CreateCommand_4(JsonNode token, CultureInfo cultureInfo)
         {
             try
             {
-                JArray items = null;
+                JsonArray items = null;
                 List<EnumerationItem> enumList = null;
 
                 _CultureInfo = cultureInfo;
-                Title = token["title"].Value<string>();
+                Title = (string)token["title"];
                 //Populate the properties according to the API version
-                TitleEnumerationKey = token["id"].Value<string>();
+                TitleEnumerationKey = (string)token["id"];
                 CommandId = TitleEnumerationKey.Replace("commandIdEnumSet.", "");
                 if (token["commandSet"] == null)
                 {
@@ -287,15 +287,15 @@ namespace JohnsonControls.Metasys.BasicServices
                     if ((token["commandBodySchema"]["properties"]["parameters"] != null)
                         && (token["commandBodySchema"]["properties"]["parameters"]["items"] != null))
                     {
-                        items = token["commandBodySchema"]["properties"]["parameters"]["items"] as JArray;
+                        items = token["commandBodySchema"]["properties"]["parameters"]["items"] as JsonArray;
                     }
                 }
                 else
                 {
-                    //This case IServiceProvider valid for binary
+                    //This case is valid for binary
                     if (token["commandSet"] != null)
                     {
-                        items = token["commandSet"] as JArray;
+                        items = token["commandSet"] as JsonArray;
                     }
                     enumList = new List<EnumerationItem>();
                 }
@@ -317,17 +317,17 @@ namespace JohnsonControls.Metasys.BasicServices
                     {
                         if (enumList == null)
                         {
-                            string iTitle = item["title"].Value<string>();
-                            string type = item["type"].Value<string>();
-                            double? maximum = (item["maximum"] != null) ? item["maximum"].Value<double?>() : null;
-                            double? minimum = (item["minimum"] != null) ? item["minimum"].Value<double?>() : null;
+                            string iTitle = (string)item["title"];
+                            string type = (string)item["type"];
+                            double? maximum = item["maximum"] != null ? item["maximum"].GetValue<double>() : (double?)null;
+                            double? minimum = item["minimum"] != null ? item["minimum"].GetValue<double>() : (double?)null;
                             //... there are other properties that could be retrieved
                             itemsList.Add(new Item(iTitle, type, minimum, maximum));
                         }
                         else
                         {
-                            string eTitle = item["title"].Value<string>();
-                            string eKey = item["id"].Value<string>();
+                            string eTitle = (string)item["title"];
+                            string eKey = (string)item["id"];
                             enumList.Add(new EnumerationItem(eTitle, eKey));
                         }
                     }
@@ -351,7 +351,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
 
         /// <summary>

@@ -1,10 +1,10 @@
-﻿using Flurl.Http;
+using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace JohnsonControls.Metasys.BasicServices
@@ -54,36 +54,36 @@ namespace JohnsonControls.Metasys.BasicServices
             if (Version < ApiVersion.v2 | Version > ApiVersion.v3) { throw new MetasysUnsupportedApiVersion(Version.ToString()); }
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JToken>("objects", ToDictionary(filter), objectId, "attributes", attributeId, "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("objects", ToDictionary(filter), objectId, "attributes", attributeId, "samples").ConfigureAwait(false);
             // Read full attribute from url
-            foreach (JToken s in response.Items)
+            foreach (JsonNode s in response.Items)
             {
                 Sample sample = new Sample();
                 string unitsUrl = string.Empty;
                 try
                 {
-                    sample.Timestamp = s["timestamp"].Value<DateTime>();
-                    sample.IsReliable = s["isReliable"].Value<Boolean>();
-                    sample.Value = s["value"]["value"].Value<double>();
-                    unitsUrl = s["value"]["units"].Value<string>();
+                    sample.Timestamp = s["timestamp"].GetValue<DateTime>();
+                    sample.IsReliable = s["isReliable"].GetValue<Boolean>();
+                    sample.Value = s["value"]["value"].GetValue<double>();
+                    unitsUrl = (string)s["value"]["units"];
                     sample.Unit = ResourceManager.Localize(unitsUrl, _CultureInfo);
 
                     //if (Version < ApiVersion.v3) {
-                    //    sample.Timestamp = s["timestamp"].Value<DateTime>();
-                    //    sample.IsReliable = s["isReliable"].Value<Boolean>();
-                    //    sample.Value = s["value"]["value"].Value<double>();
-                    //    unitsUrl = s["value"]["units"].Value<string>();
+                    //    sample.Timestamp = s["timestamp"].GetValue<DateTime>();
+                    //    sample.IsReliable = s["isReliable"].GetValue<Boolean>();
+                    //    sample.Value = s["value"]["value"].GetValue<double>();
+                    //    unitsUrl = (string)s["value"]["units"];
                     //    sample.Unit = ResourceManager.Localize(unitsUrl, _CultureInfo);
                     //} else {
                     //    // Note: for Api v3 the schema was changed then it came back to the same as previous versions.
-                    //    sample.Timestamp = s["result"]["timestamp"].Value<DateTime>();
-                    //    sample.IsReliable = s["result"]["isReliable"].Value<Boolean>();
-                    //    sample.Value = s["result"]["value"]["value"]["value"].Value<double>();
-                    //    sample.Unit = s["result"]["value"]["units"].Value<string>();
+                    //    sample.Timestamp = s["result"]["timestamp"].GetValue<DateTime>();
+                    //    sample.IsReliable = s["result"]["isReliable"].GetValue<Boolean>();
+                    //    sample.Value = s["result"]["value"]["value"]["value"].GetValue<double>();
+                    //    sample.Unit = (string)s["result"]["value"]["units"];
                     //    sample.Unit = ResourceManager.Localize(sample.Unit, _CultureInfo);
                     //}
                 }
-                catch (ArgumentNullException e)
+                catch (Exception e) when (e is ArgumentNullException || e is NullReferenceException)
                 {
                     // Something went wrong on object parsing
                     throw new MetasysObjectException(e);
@@ -96,7 +96,7 @@ namespace JohnsonControls.Metasys.BasicServices
                     if (!Units.ContainsKey(unitId))
                     {
                         var unit = await GetWithFullUrl(unitsUrl).ConfigureAwait(false);
-                        Units.Add(unitId, unit["description"].Value<string>());
+                        Units.Add(unitId, (string)unit["description"]);
                     }
                     sample.Unit = Units[unitId];
                 }
@@ -131,24 +131,24 @@ namespace JohnsonControls.Metasys.BasicServices
             if (Version < ApiVersion.v4) { throw new MetasysUnsupportedApiVersion(Version.ToString()); }
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JToken>("objects", ToDictionary(filter), objectId, "trendedAttributes", attributeName.ToString(), "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("objects", ToDictionary(filter), objectId, "trendedAttributes", attributeName.ToString(), "samples").ConfigureAwait(false);
             // Read full attribute from url
-            foreach (JToken s in response.Items)
+            foreach (JsonNode s in response.Items)
             {
                 Sample sample = new Sample();
                 string unitsUrl = string.Empty;
                 try
                 {
                     sample.Timestamp = (DateTime)s["sampleTime"];
-                    if (s["reliability"] != null && s["reliability"].ToString() == "reliabilityEnumSet.reliable")
+                    if (s["reliability"] != null && (string)s["reliability"] == "reliabilityEnumSet.reliable")
                     {
                         sample.IsReliable = true;
                     }
                     else
                         sample.IsReliable = false;
-                    sample.Value = s["value"].Value<double>();
+                    sample.Value = s["value"].GetValue<double>();
                 }
-                catch (ArgumentNullException e)
+                catch (Exception e) when (e is ArgumentNullException || e is NullReferenceException)
                 {
                     // Something went wrong on object parsing
                     throw new MetasysObjectException(e);
@@ -179,9 +179,9 @@ namespace JohnsonControls.Metasys.BasicServices
 
             List<MetasysAttribute> objectAttributes = new List<MetasysAttribute>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            JToken attributes = (await GetRequestAsync("objects", null, id, "trendedAttributes").ConfigureAwait(false));
+            JsonNode attributes = (await GetRequestAsync("objects", null, id, "trendedAttributes").ConfigureAwait(false));
             // Read full attribute from url
-            if (!(attributes["items"] is JArray))
+            if (!(attributes["items"] is JsonArray))
             {
                 // This structure applies since v3-pre release
                 if (attributes["items"]["item"] != null)
@@ -189,24 +189,24 @@ namespace JohnsonControls.Metasys.BasicServices
                     attributes["items"] = attributes["items"]["item"];
                 }
             }
-            foreach (var a in attributes["items"])
+            foreach (var a in attributes["items"].AsArray())
             {
                 try
                 {
                     MetasysAttribute metasysAttribute = new MetasysAttribute();
                     if (Version < ApiVersion.v3)
                     {
-                        var attributeUrl = a["attributeUrl"].Value<string>();
+                        var attributeUrl = (string)a["attributeUrl"];
                         var attribute = await GetWithFullUrl(attributeUrl).ConfigureAwait(false);
-                        metasysAttribute.Id = attribute["id"].Value<int>();
-                        metasysAttribute.Description = attribute["description"].Value<string>();
+                        metasysAttribute.Id = (int)attribute["id"];
+                        metasysAttribute.Description = (string)attribute["description"];
                     }
                     else
                     {
                         // Since Api v3 the schema has changed and contains the enum fully qualified name instead of the URL
-                        metasysAttribute.Description = a["attribute"].Value<string>();
+                        metasysAttribute.Description = (string)a["attribute"];
                         // Take the attribute ID from the samples url
-                        var samplesUrl = a["samplesUrl"].Value<string>();
+                        var samplesUrl = (string)a["samplesUrl"];
                         var attrId = samplesUrl.Split('/').Reverse().Skip(1).FirstOrDefault();
                         if (Version == ApiVersion.v3)
                         {
@@ -220,7 +220,7 @@ namespace JohnsonControls.Metasys.BasicServices
                     }
                     objectAttributes.Add(metasysAttribute);
                 }
-                catch (ArgumentNullException e)
+                catch (Exception e) when (e is ArgumentNullException || e is NullReferenceException)
                 {
                     // Something went wrong on object parsing
                     throw new MetasysObjectException(e);
@@ -242,9 +242,9 @@ namespace JohnsonControls.Metasys.BasicServices
 
             List<MetasysAttribute> objectAttributes = new List<MetasysAttribute>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            JToken attributes = (await GetRequestAsync("networkDevices", null, id, "trendedAttributes").ConfigureAwait(false));
+            JsonNode attributes = (await GetRequestAsync("networkDevices", null, id, "trendedAttributes").ConfigureAwait(false));
             // Read full attribute from url
-            if (!(attributes["items"] is JArray))
+            if (!(attributes["items"] is JsonArray))
             {
                 // This structure applies since v3-pre release
                 if (attributes["items"]["item"] != null)
@@ -252,24 +252,24 @@ namespace JohnsonControls.Metasys.BasicServices
                     attributes["items"] = attributes["items"]["item"];
                 }
             }
-            foreach (var a in attributes["items"])
+            foreach (var a in attributes["items"].AsArray())
             {
                 try
                 {
                     MetasysAttribute metasysAttribute = new MetasysAttribute();
                     if (Version < ApiVersion.v3)
                     {
-                        var attributeUrl = a["attributeUrl"].Value<string>();
+                        var attributeUrl = (string)a["attributeUrl"];
                         var attribute = await GetWithFullUrl(attributeUrl).ConfigureAwait(false);
-                        metasysAttribute.Id = attribute["id"].Value<int>();
-                        metasysAttribute.Description = attribute["description"].Value<string>();
+                        metasysAttribute.Id = (int)attribute["id"];
+                        metasysAttribute.Description = (string)attribute["description"];
                     }
                     else
                     {
                         // Since Api v3 the schema has changed and contains the enum fully qualified name instead of the URL
-                        metasysAttribute.Description = a["attribute"].Value<string>();
+                        metasysAttribute.Description = (string)a["attribute"];
                         // Take the attribute ID from the samples url
-                        var samplesUrl = a["samplesUrl"].Value<string>();
+                        var samplesUrl = (string)a["samplesUrl"];
                         var attrId = samplesUrl.Split('/').Reverse().Skip(1).FirstOrDefault();
                         if (Version == ApiVersion.v3)
                         {
@@ -283,7 +283,7 @@ namespace JohnsonControls.Metasys.BasicServices
                     }
                     objectAttributes.Add(metasysAttribute);
                 }
-                catch (ArgumentNullException e)
+                catch (Exception e) when (e is ArgumentNullException || e is NullReferenceException)
                 {
                     // Something went wrong on object parsing
                     throw new MetasysObjectException(e);
@@ -315,21 +315,21 @@ namespace JohnsonControls.Metasys.BasicServices
             if (Version < ApiVersion.v2 | Version > ApiVersion.v3) { throw new MetasysUnsupportedApiVersion(Version.ToString()); }
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JToken>("networkDevices", ToDictionary(filter), networkDeviceId, "attributes", attributeId, "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("networkDevices", ToDictionary(filter), networkDeviceId, "attributes", attributeId, "samples").ConfigureAwait(false);
             // Read full attribute from url
-            foreach (JToken s in response.Items)
+            foreach (JsonNode s in response.Items)
             {
                 Sample sample = new Sample();
                 string unitsUrl = string.Empty;
                 try
                 {
-                    sample.Timestamp = s["timestamp"].Value<DateTime>();
-                    sample.IsReliable = s["isReliable"].Value<Boolean>();
-                    sample.Value = s["value"]["value"].Value<double>();
-                    unitsUrl = s["value"]["units"].Value<string>();
+                    sample.Timestamp = s["timestamp"].GetValue<DateTime>();
+                    sample.IsReliable = s["isReliable"].GetValue<Boolean>();
+                    sample.Value = s["value"]["value"].GetValue<double>();
+                    unitsUrl = (string)s["value"]["units"];
                     sample.Unit = ResourceManager.Localize(unitsUrl, _CultureInfo);
                 }
-                catch (ArgumentNullException e)
+                catch (Exception e) when (e is ArgumentNullException || e is NullReferenceException)
                 {
                     // Something went wrong on object parsing
                     throw new MetasysObjectException(e);
@@ -342,7 +342,7 @@ namespace JohnsonControls.Metasys.BasicServices
                     if (!Units.ContainsKey(unitId))
                     {
                         var unit = await GetWithFullUrl(unitsUrl).ConfigureAwait(false);
-                        Units.Add(unitId, unit["description"].Value<string>());
+                        Units.Add(unitId, (string)unit["description"]);
                     }
                     sample.Unit = Units[unitId];
                 }
@@ -378,21 +378,21 @@ namespace JohnsonControls.Metasys.BasicServices
 
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JToken>("networkDevices", ToDictionary(filter), networkDeviceId, "trendedAttributes", attributeName.ToString(), "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("networkDevices", ToDictionary(filter), networkDeviceId, "trendedAttributes", attributeName.ToString(), "samples").ConfigureAwait(false);
             // Read full attribute from url
-            foreach (JToken s in response.Items)
+            foreach (JsonNode s in response.Items)
             {
                 Sample sample = new Sample();
                 string unitsUrl = string.Empty;
                 try
                 {
-                    sample.Timestamp = s["timestamp"].Value<DateTime>();
-                    sample.IsReliable = s["isReliable"].Value<Boolean>();
-                    sample.Value = s["value"]["value"].Value<double>();
-                    unitsUrl = s["value"]["units"].Value<string>();
+                    sample.Timestamp = s["timestamp"].GetValue<DateTime>();
+                    sample.IsReliable = s["isReliable"].GetValue<Boolean>();
+                    sample.Value = s["value"]["value"].GetValue<double>();
+                    unitsUrl = (string)s["value"]["units"];
                     sample.Unit = ResourceManager.Localize(unitsUrl, _CultureInfo);
                 }
-                catch (ArgumentNullException e)
+                catch (Exception e) when (e is ArgumentNullException || e is NullReferenceException)
                 {
                     // Something went wrong on object parsing
                     throw new MetasysObjectException(e);
@@ -405,7 +405,7 @@ namespace JohnsonControls.Metasys.BasicServices
                     if (!Units.ContainsKey(unitId))
                     {
                         var unit = await GetWithFullUrl(unitsUrl).ConfigureAwait(false);
-                        Units.Add(unitId, unit["description"].Value<string>());
+                        Units.Add(unitId, (string)unit["description"]);
                     }
                     sample.Unit = Units[unitId];
                 }

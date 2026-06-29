@@ -1,12 +1,12 @@
-﻿using Flurl;
+using Flurl;
 using Flurl.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace JohnsonControls.Metasys.BasicServices
@@ -39,7 +39,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 response = response["item"];
             }
 
-            var auditData = JsonConvert.DeserializeObject<Audit>(response.ToString());
+            var auditData = JsonSerializer.Deserialize<Audit>(response.ToJsonString());
             if (Version > ApiVersion.v2)
             {
                 auditData = CreateItem(auditData);
@@ -117,16 +117,16 @@ namespace JohnsonControls.Metasys.BasicServices
                 // Build AlarmAnnotation object
                 try
                 {
-                    auditAnnotation.Text = token["text"].Value<string>();
-                    auditAnnotation.User = token["user"].Value<string>();
-                    auditAnnotation.CreationTime = token["creationTime"].Value<DateTime>();
-                    auditAnnotation.Action = token["action"].Value<string>();
-                    auditAnnotation.AuditUrl = token["auditUrl"].Value<string>();
+                    auditAnnotation.Text = (string)token["text"];
+                    auditAnnotation.User = (string)token["user"];
+                    auditAnnotation.CreationTime = token["creationTime"].GetValue<DateTime>();
+                    auditAnnotation.Action = (string)token["action"];
+                    auditAnnotation.AuditUrl = (string)token["auditUrl"];
                     annotationsList.Add(auditAnnotation);
                 }
                 catch (Exception e)
                 {
-                    throw new MetasysObjectException(token.ToString(), e);
+                    throw new MetasysObjectException(token.ToJsonString(), e);
                 }
             }
             return annotationsList;
@@ -296,87 +296,87 @@ namespace JohnsonControls.Metasys.BasicServices
             try
             {
                 var stringAuditData = item.ToString();
-                var data = JObject.Parse(stringAuditData);
-                item.ActionType = data["ActionType"].Value<string>();
-                item.Status = data["Status"].Value<string>();
+                var data = JsonNode.Parse(stringAuditData) as JsonObject;
+                item.ActionType = (string)data["ActionType"];
+                item.Status = (string)data["Status"];
 
-                if (data["PreData"].ToString() != null)
+                if (data["PreData"] != null)
                 {
-                    if (data["PreData"].HasValues)
+                    if (data["PreData"] is JsonObject preDataObj && preDataObj.Count > 0)
                     {
                         item.PreData = new AuditData
                         {
-                            Unit = GetJObjectValue(data, "PreData", "unit"),
-                            Precision = GetJObjectValue(data, "PreData", "precision"),
-                            Value = GetJObjectValue(data, "PreData", "value"),
-                            Type = GetJObjectValue(data, "PreData", "type")
+                            Unit = GetJsonObjectValue(data, "PreData", "unit"),
+                            Precision = GetJsonObjectValue(data, "PreData", "precision"),
+                            Value = GetJsonObjectValue(data, "PreData", "value"),
+                            Type = GetJsonObjectValue(data, "PreData", "type")
                         };
                     }
                     else
                     {
-                        item.PreData = data["PreData"].Value<string>() != null ? data["PreData"].ToString() : null;
+                        item.PreData = (string)data["PreData"] != null ? (string)data["PreData"] : null;
                     }
                 }
 
-                if (data["PostData"].ToString() != null)
+                if (data["PostData"] != null)
                 {
-                    if (data["PostData"].HasValues)
+                    if (data["PostData"] is JsonObject postDataObj && postDataObj.Count > 0)
                     {
                         item.PostData = new AuditData
                         {
-                            Unit = GetJObjectValue(data, "PostData", "unit"),
-                            Precision = GetJObjectValue(data, "PostData", "precision"),
-                            Value = GetJObjectValue(data, "PostData", "value"),
-                            Type = GetJObjectValue(data, "PostData", "type")
+                            Unit = GetJsonObjectValue(data, "PostData", "unit"),
+                            Precision = GetJsonObjectValue(data, "PostData", "precision"),
+                            Value = GetJsonObjectValue(data, "PostData", "value"),
+                            Type = GetJsonObjectValue(data, "PostData", "type")
                         };
                     }
                     else
                     {
-                        item.PostData = data["PostData"].Value<string>() != null ? data["PostData"].ToString() : null;
+                        item.PostData = (string)data["PostData"] != null ? (string)data["PostData"] : null;
                     }
                 }
 
-                if (data["Parameters"].ToString() == "[]")
+                if (data["Parameters"] != null && data["Parameters"].ToJsonString() == "[]")
                 {
-                    item.Parameters = data["Parameters"].ToString();
+                    item.Parameters = data["Parameters"].ToJsonString();
                 }
                 else
                 {
-                    if (data["Parameters"].ToString() != null)
+                    if (data["Parameters"] != null)
                     {
-                        if (data["Parameters"].HasValues)
+                        if (data["Parameters"] is JsonObject parametersObj && parametersObj.Count > 0)
                         {
                             item.Parameters = new AuditData
                             {
-                                Unit = GetJObjectValue(data, "Parameters", "unit"),
-                                Precision = GetJObjectValue(data, "Parameters", "precision"),
-                                Value = GetJObjectValue(data, "Parameters", "value"),
-                                Type = GetJObjectValue(data, "Parameters", "type")
+                                Unit = GetJsonObjectValue(data, "Parameters", "unit"),
+                                Precision = GetJsonObjectValue(data, "Parameters", "precision"),
+                                Value = GetJsonObjectValue(data, "Parameters", "value"),
+                                Type = GetJsonObjectValue(data, "Parameters", "type")
                             };
                         }
                         else
                         {
-                            item.Parameters = data["Parameters"].Value<string>() != null ? data["Parameters"].ToString() : null;
+                            item.Parameters = (string)data["Parameters"] != null ? (string)data["Parameters"] : null;
                         }
                     }
                 }
 
-                if (data["Legacy"].ToString() != null)
+                if (data["Legacy"] != null)
                 {
-                    if (data["Legacy"].HasValues)
+                    if (data["Legacy"] is JsonObject legacyObj && legacyObj.Count > 0)
                     {
                         item.Legacy = new LegacyInfo
                         {
-                            FullyQualifiedItemReference = data["Legacy"]["fullyQualifiedItemReference"].Value<string>(),
-                            ItemName = data["Legacy"]["itemName"].Value<string>(),
-                            ClassLevel = data["Legacy"]["classLevel"].Value<string>(),
-                            OriginApplication = data["Legacy"]["originApplication"].Value<string>(),
-                            Description = data["Legacy"]["description"].Value<string>()
+                            FullyQualifiedItemReference = (string)data["Legacy"]["fullyQualifiedItemReference"],
+                            ItemName = (string)data["Legacy"]["itemName"],
+                            ClassLevel = (string)data["Legacy"]["classLevel"],
+                            OriginApplication = (string)data["Legacy"]["originApplication"],
+                            Description = (string)data["Legacy"]["description"]
                         };
                     }
                     else
                     {
-                        item.Legacy = data["Legacy"].Value<string>() != null ? data["Legacy"].ToString() : null;
+                        item.Legacy = (string)data["Legacy"] != null ? (string)data["Legacy"] : null;
                     }
                 }
             }
@@ -390,20 +390,20 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <summary>
-        /// Convert a JToken batch request response into VariantMultiple.
+        /// Convert a JsonNode batch request response into VariantMultiple.
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private IEnumerable<Result> ToResult(JToken response)
+        private IEnumerable<Result> ToResult(JsonNode response)
         {
             List<Result> results = new List<Result>();
-            foreach (var r in response["responses"])
+            foreach (var r in response["responses"].AsArray())
             {
-                var respIds = r["id"].Value<string>().Split('_');
+                var respIds = ((string)r["id"]).Split('_');
 
                 Result resultItem = new Result();
                 resultItem.Id = new ActivityId(respIds[0]); ;
-                resultItem.Status = r["status"].Value<int>();
+                resultItem.Status = (int)r["status"];
                 resultItem.Annotation = respIds[1];
                 results.Add(resultItem);
             }
@@ -442,7 +442,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return value.ToString();
         }
 
-        private string GetJObjectValue(JObject jObj, string group, string field)
+        private string GetJsonObjectValue(JsonObject jObj, string group, string field)
         {
             string res = string.Empty;
             try
@@ -451,9 +451,9 @@ namespace JohnsonControls.Metasys.BasicServices
                 {
                     if ((jObj.ContainsKey(group)) && (jObj[group] != null))
                     {
-                        if ((jObj[group].Contains(field)) && (jObj[group][field] != null))
+                        if (jObj[group] is JsonObject grp && grp.ContainsKey(field) && grp[field] != null)
                         {
-                            res = jObj[group][field].Value<string>();
+                            res = (string)grp[field];
                         }
                     };
                 };
@@ -531,7 +531,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

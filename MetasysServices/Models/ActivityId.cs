@@ -1,7 +1,19 @@
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
+    internal class ActivityIdConverter : JsonConverter<ActivityId>
+    {
+        public override ActivityId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => new ActivityId(reader.GetString());
+
+        public override void Write(Utf8JsonWriter writer, ActivityId value, JsonSerializerOptions options)
+            => writer.WriteStringValue(value.Value);
+    }
+
+
     /// <summary>
     /// A Metasys Activity Identifier
     /// </summary>
@@ -13,6 +25,7 @@ namespace JohnsonControls.Metasys.BasicServices
     /// This is because this is just a token type to signify that an activity identifier is required.
     /// As such it has implicit conversions to/from string.
     /// </remarks>
+    [JsonConverter(typeof(ActivityIdConverter))]
     public record struct ActivityId(string Value) : IEquatable<ActivityId>, IEquatable<string>, IEquatable<Guid>
     {
         /// <summary>

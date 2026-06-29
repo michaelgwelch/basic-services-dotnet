@@ -1,11 +1,11 @@
-﻿using Flurl;
+using Flurl;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace JohnsonControls.Metasys.BasicServices
@@ -117,7 +117,7 @@ namespace JohnsonControls.Metasys.BasicServices
             var response = await GetRequestAsync("alarms", null, alarmId).ConfigureAwait(false);
             if (response["items"] != null) response = response["items"];
 
-            var alarmData = JsonConvert.DeserializeObject<Alarm>(response.ToString());
+            var alarmData = JsonSerializer.Deserialize<Alarm>(response.ToJsonString());
             if (Version > ApiVersion.v2)
             {
                 alarmData = CreateItem(alarmData);
@@ -199,11 +199,11 @@ namespace JohnsonControls.Metasys.BasicServices
 
             if (Version > ApiVersion.v3)
             {
-                JObject body = new JObject();
-                body.Add(propertyName: "activityManagementStatus", value: action.ToString());
+                var body = new JsonObject();
+                body["activityManagementStatus"] = action.ToString();
                 if (annotationText != null)
                 {
-                    body.Add(propertyName: "annotationText", value: annotationText);
+                    body["annotationText"] = annotationText;
                 }
 
                 var response = await Client.Request(new Url("alarms")
@@ -230,11 +230,11 @@ namespace JohnsonControls.Metasys.BasicServices
 
             if (Version > ApiVersion.v3)
             {
-                JObject body = new JObject();
-                body.Add(propertyName: "activityManagementStatus", value: ActivityManagementStatusEnum.discarded.ToString());
+                var body = new JsonObject();
+                body["activityManagementStatus"] = ActivityManagementStatusEnum.discarded.ToString();
                 if (annotationText != null)
                 {
-                    body.Add(propertyName: "annotationText", value: annotationText);
+                    body["annotationText"] = annotationText;
                 }
 
                 var response = await Client.Request(new Url("alarms")
@@ -261,11 +261,11 @@ namespace JohnsonControls.Metasys.BasicServices
 
             if (Version > ApiVersion.v3)
             {
-                JObject body = new JObject();
-                body.Add(propertyName: "activityManagementStatus", value: ActivityManagementStatusEnum.acknowledged.ToString());
+                var body = new JsonObject();
+                body["activityManagementStatus"] = ActivityManagementStatusEnum.acknowledged.ToString();
                 if (annotationText != null)
                 {
-                    body.Add(propertyName: "annotationText", value: annotationText);
+                    body["annotationText"] = annotationText;
                 }
 
                 var response = await Client.Request(new Url("alarms")
@@ -324,7 +324,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return item;
         }
 
-        private AlarmAnnotation CreateAlarmAnnotation(JToken token)
+        private AlarmAnnotation CreateAlarmAnnotation(JsonNode token)
         {
             // Build AlarmAnnotation object
             AlarmAnnotation res = new AlarmAnnotation();
@@ -336,15 +336,15 @@ namespace JohnsonControls.Metasys.BasicServices
                 //res.Action = GetJTokenValue(token, "action");
                 //res.AlarmUrl = GetJTokenValue(token, "alarmUrl");
 
-                res.Text = token["text"].Value<string>();
-                res.User = token["user"].Value<string>();
-                res.CreationTime = token["creationTime"].Value<DateTime>();
-                res.Action = token["action"].Value<string>();
-                res.AlarmUrl = token["alarmUrl"].Value<string>();
+                res.Text = (string)token["text"];
+                res.User = (string)token["user"];
+                res.CreationTime = token["creationTime"].GetValue<DateTime>();
+                res.Action = (string)token["action"];
+                res.AlarmUrl = (string)token["alarmUrl"];
             }
             catch (Exception e)
             {
-                throw new MetasysObjectException(token.ToString(), e);
+                throw new MetasysObjectException(token.ToJsonString(), e);
             }
             return res;
         }

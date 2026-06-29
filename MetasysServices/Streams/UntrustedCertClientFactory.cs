@@ -1,19 +1,18 @@
-﻿using Flurl.Http.Configuration;
 using System.Net.Http;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
     /// <summary>
-    /// Provide Untrusted Certificate Client Factory.
+    /// Creates an HttpClient that bypasses server certificate validation.
     /// </summary>
-    public class UntrustedCertClientFactory : DefaultHttpClientFactory
+    public class UntrustedCertClientFactory
     {
         // https://stackoverflow.com/questions/53853081/flurl-and-untrusted-certificates
 
         /// <summary>
-        /// Create Message Handler.
+        /// Creates a message handler that bypasses SSL certificate validation.
         /// </summary>
-        public override HttpMessageHandler CreateMessageHandler()
+        public HttpMessageHandler CreateMessageHandler()
         {
             return new HttpClientHandler
             {

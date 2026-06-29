@@ -1,5 +1,5 @@
 using JohnsonControls.Metasys.BasicServices;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -40,7 +40,7 @@ namespace MetasysServices.Tests
                         "\"const\": \"writePriorityEnumSet.priorityNone\",",
                         "\"title\": \"0 (No Priority)\"},",
                         "{\"const\": \"writePriorityEnumSet.priorityManualEmergency\",",
-                        "\"title\": \"1 (Manual Life Safety)\"}],",
+                        "\"title\": \"1 (Manual Life Safety)\"}]",
                     "},",
                     "{\"type\": \"number\",",
                     "\"title\": \"Value\",",
@@ -65,8 +65,8 @@ namespace MetasysServices.Tests
                 "\"minItems\": 6,",
                 "\"maxItems\": 6 }");
             string commandCopy = command.Clone().ToString();
-            Command cmd = new(JToken.Parse(command), testCulture, ApiVersion.v2);
-            Command cmdCopy = new(JToken.Parse(commandCopy), testCulture, ApiVersion.v2);
+            Command cmd = new(JsonNode.Parse(command), testCulture, ApiVersion.v2);
+            Command cmdCopy = new(JsonNode.Parse(commandCopy), testCulture, ApiVersion.v2);
 
             Assert.AreEqual(cmd.GetHashCode(), cmdCopy.GetHashCode());
             Assert.AreEqual(cmd, cmdCopy);
@@ -109,13 +109,13 @@ namespace MetasysServices.Tests
                     $"\"type\": \"https://hostname/api/{version}/enumSets/508/members/197\"}}");
             }
             string objCopy = obj.Clone().ToString();
-            MetasysObject child = new(JToken.Parse(obj2), version, null);
-            MetasysObject childCopy = new(JToken.Parse(obj2), version, null);
+            MetasysObject child = new(JsonNode.Parse(obj2), version, null);
+            MetasysObject childCopy = new(JsonNode.Parse(obj2), version, null);
             List<MetasysObject> childlist = new() { child };
             List<MetasysObject> childlistCopy = new() { childCopy };
 
-            MetasysObject metObj = new(JToken.Parse(obj), version, childlist);
-            MetasysObject metObjCopy = new(JToken.Parse(objCopy), version, childlistCopy);
+            MetasysObject metObj = new(JsonNode.Parse(obj), version, childlist);
+            MetasysObject metObjCopy = new(JsonNode.Parse(objCopy), version, childlistCopy);
 
             Assert.AreEqual(metObj.GetHashCode(), metObjCopy.GetHashCode());
             Assert.AreEqual(metObj, metObjCopy);
@@ -150,8 +150,8 @@ namespace MetasysServices.Tests
                 json1 = "{\"item\": { \"" + "attr" + "\": [ 0, 1, 2 ] }}";
                 json2 = "{\"item\": { \"" + "attr" + "\": [ 0, 1, 2 ] }}";
             }
-            Variant v = new(id, JToken.Parse(json1), "attr", testCulture, version);
-            Variant vCopy = new(idCopy, JToken.Parse(json2), "attr", testCulture, version);
+            Variant v = new(id, JsonNode.Parse(json1), "attr", testCulture, version);
+            Variant vCopy = new(idCopy, JsonNode.Parse(json2), "attr", testCulture, version);
             Assert.AreEqual(v.GetHashCode(), vCopy.GetHashCode());
             Assert.AreEqual(v, vCopy);
         }
@@ -189,8 +189,8 @@ namespace MetasysServices.Tests
             }
             string dataCopy = data.Clone().ToString();
 
-            Variant v = new(id, JToken.Parse(data), "presentValue", testCulture, version);
-            Variant vCopy = new(idCopy, JToken.Parse(dataCopy), "presentValue", testCulture, version);
+            Variant v = new(id, JsonNode.Parse(data), "presentValue", testCulture, version);
+            Variant vCopy = new(idCopy, JsonNode.Parse(dataCopy), "presentValue", testCulture, version);
             Assert.AreEqual(v.GetHashCode(), vCopy.GetHashCode());
             Assert.AreEqual(v, vCopy);
         }
@@ -218,8 +218,8 @@ namespace MetasysServices.Tests
                         }
                     }";
             }
-            Variant v = new(id, JToken.Parse(json), "attr", testCulture, version);
-            Variant vCopy = new(idCopy, JToken.Parse(json), "attr", testCulture, version);
+            Variant v = new(id, JsonNode.Parse(json), "attr", testCulture, version);
+            Variant vCopy = new(idCopy, JsonNode.Parse(json), "attr", testCulture, version);
             List<Variant> vlist = new() { v };
             List<Variant> vlistCopy = new() { vCopy };
 
@@ -283,8 +283,8 @@ namespace MetasysServices.Tests
                     "}],",
                 "\"minItems\": 1,",
                 "\"maxItems\": 1 }");
-            Command cmd1 = new(JToken.Parse(command1), testCulture, ApiVersion.v2);
-            Command cmd2 = new(JToken.Parse(command2), testCulture, ApiVersion.v2);
+            Command cmd1 = new(JsonNode.Parse(command1), testCulture, ApiVersion.v2);
+            Command cmd2 = new(JsonNode.Parse(command2), testCulture, ApiVersion.v2);
 
             Assert.AreNotEqual(cmd1.GetHashCode(), cmd2.GetHashCode());
             Assert.AreNotEqual(cmd1, cmd2);
@@ -338,15 +338,15 @@ namespace MetasysServices.Tests
                     "\"description\": \"description3\",",
                     $"\"type\": \"https://hostname/api/{version}/enumSets/508/members/197\"}}");
             }
-            MetasysObject child = new(JToken.Parse(obj3), version, null);
-            MetasysObject child2 = new(JToken.Parse(obj3), version, null);
+            MetasysObject child = new(JsonNode.Parse(obj3), version, null);
+            MetasysObject child2 = new(JsonNode.Parse(obj3), version, null);
             List<MetasysObject> childlist = new() { child };
             List<MetasysObject> childlist2 = new() { child2 };
 
-            MetasysObject metObj = new(JToken.Parse(obj), version, childlist);
-            MetasysObject metObj2 = new(JToken.Parse(obj2), version, childlist2);
-            MetasysObject metObj3 = new(JToken.Parse(obj), version, null);
-            MetasysObject metObj4 = new(JToken.Parse(obj2), version, null);
+            MetasysObject metObj = new(JsonNode.Parse(obj), version, childlist);
+            MetasysObject metObj2 = new(JsonNode.Parse(obj2), version, childlist2);
+            MetasysObject metObj3 = new(JsonNode.Parse(obj), version, null);
+            MetasysObject metObj4 = new(JsonNode.Parse(obj2), version, null);
 
             Assert.AreNotEqual(metObj.GetHashCode(), metObj2.GetHashCode());
             Assert.AreNotEqual(metObj, metObj2);
@@ -383,8 +383,8 @@ namespace MetasysServices.Tests
                 json1 = "{\"item\": { \"" + "attr" + "\": [ 0, 1, 2 ] }}";
                 json2 = "{\"item\": { \"" + "attr" + "\": [ 0, 1, 3 ] }}";
             }
-            Variant v = new(id, JToken.Parse(json1), "attr", testCulture, version);
-            Variant v2 = new(id2, JToken.Parse(json2), "attr", testCulture, version);
+            Variant v = new(id, JsonNode.Parse(json1), "attr", testCulture, version);
+            Variant v2 = new(id2, JsonNode.Parse(json2), "attr", testCulture, version);
             Assert.AreNotEqual(v.GetHashCode(), v2.GetHashCode());
             Assert.AreNotEqual(v, v2);
         }
@@ -454,9 +454,9 @@ namespace MetasysServices.Tests
                     }";
             }
 
-            Variant v = new(id, JToken.Parse(data), "presentValue", testCulture, version);
-            Variant v2 = new(id, JToken.Parse(data2), "presentValue", testCulture, version);
-            Variant v3 = new(id, JToken.Parse(data3), "presentValue", testCulture, version);
+            Variant v = new(id, JsonNode.Parse(data), "presentValue", testCulture, version);
+            Variant v2 = new(id, JsonNode.Parse(data2), "presentValue", testCulture, version);
+            Variant v3 = new(id, JsonNode.Parse(data3), "presentValue", testCulture, version);
             Assert.AreNotEqual(v.GetHashCode(), v2.GetHashCode());
             Assert.AreNotEqual(v, v2);
             Assert.AreNotEqual(v.GetHashCode(), v3.GetHashCode());
@@ -496,8 +496,8 @@ namespace MetasysServices.Tests
                         }
                     }";
             }
-            Variant v = new(id, JToken.Parse(json1), "attr", testCulture, version);
-            Variant v2 = new(id2, JToken.Parse(json2), "attr", testCulture, version);
+            Variant v = new(id, JsonNode.Parse(json1), "attr", testCulture, version);
+            Variant v2 = new(id2, JsonNode.Parse(json2), "attr", testCulture, version);
             List<Variant> vlist = new() { v };
             List<Variant> vlist2 = new() { v2 };
 

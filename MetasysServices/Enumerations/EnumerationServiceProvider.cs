@@ -1,11 +1,10 @@
-﻿using Flurl;
+using Flurl;
 using Flurl.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 
@@ -44,22 +43,21 @@ namespace JohnsonControls.Metasys.BasicServices
                 try
                 {
                     var response = await Client.Request(new Url("enumerations"))
-                        .GetJsonAsync<JToken>()
+                        .GetJsonAsync<JsonNode>()
                         .ConfigureAwait(false);
                     try
                     {
-                        var items = response["items"];
-                        dynamic kvpList = JsonConvert.DeserializeObject<ExpandoObject>(items.ToString());
-                        foreach (KeyValuePair<string, object> kvp in kvpList)
+                        var items = response["items"] as JsonObject;
+                        foreach (var kvp in items)
                         {
                             if (kvp.Key.Length > 0)
                             {
-                                var itm = kvp.Value as IDictionary<string, object>;
-                                String key = kvp.Key;
-                                String name = (itm.ContainsKey("name")) ? itm["name"].ToString() : String.Empty;
-                                bool isTwoState = bool.Parse((itm.ContainsKey("isTwoState")) ? itm["isTwoState"].ToString() : Convert.ToString(false));
-                                bool isMultiState = bool.Parse((itm.ContainsKey("isMultiState")) ? itm["isMultiState"].ToString() : Convert.ToString(false));
-                                int numberOfStates = int.Parse((itm.ContainsKey("numberOfStates")) ? itm["numberOfStates"].ToString() : Convert.ToString(0));
+                                var itm = kvp.Value as JsonObject;
+                                string key = kvp.Key;
+                                string name = itm != null && itm.ContainsKey("name") ? (string)itm["name"] : string.Empty;
+                                bool isTwoState = itm != null && itm.ContainsKey("isTwoState") && itm["isTwoState"].GetValue<bool>();
+                                bool isMultiState = itm != null && itm.ContainsKey("isMultiState") && itm["isMultiState"].GetValue<bool>();
+                                int numberOfStates = itm != null && itm.ContainsKey("numberOfStates") ? itm["numberOfStates"].GetValue<int>() : 0;
 
                                 var enumItem = new MetasysEnumeration(key, name, isTwoState, isMultiState, numberOfStates);
                                 enums.Add(enumItem);
@@ -80,12 +78,12 @@ namespace JohnsonControls.Metasys.BasicServices
 
         // Create ----------------------------------------------------------------------------------------------------------------------------------------
         /// <inheritdoc/>
-        public void Create(string name, IEnumerable<String> values)
+        public void Create(string name, IEnumerable<string> values)
         {
             CreateAsync(name, values).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task CreateAsync(string name, IEnumerable<String> values)
+        public async Task CreateAsync(string name, IEnumerable<string> values)
         {
             CheckVersion(Version);
             try
@@ -95,17 +93,13 @@ namespace JohnsonControls.Metasys.BasicServices
                     //Check if the name is not blank or the length of the list of members is >= 2
                     if (name.Length > 0 && values.Count() >= 2)
                     {
-                        JObject body = new JObject();
-                        JObject item = new JObject();
-                        JArray members = new JArray();
-                        item.Add(propertyName: "name", value: name);
-                        foreach (String v in values)
+                        var members = new JsonArray();
+                        foreach (string v in values)
                         {
-                            members.Add(v.ToString());
+                            members.Add(JsonValue.Create(v));
                         }
-                        item.Add(propertyName: "members", value: members);
-                        body.Add(propertyName: "item", value: item);
-                        // Post the list of requests and return responses as JToken
+                        var item = new JsonObject { ["name"] = JsonValue.Create(name), ["members"] = members };
+                        var body = new JsonObject { ["item"] = item };
                         var response = await Client.Request(new Url("enumerations"))
                                                     .PostJsonAsync(body)
                                                     .ConfigureAwait(false);
@@ -120,24 +114,24 @@ namespace JohnsonControls.Metasys.BasicServices
 
         // GetValues ------------------------------------------------------------------------------------------------------------------------------------
         /// <inheritdoc/>
-        public IEnumerable<MetasysEnumValue> GetValues(String id)
+        public IEnumerable<MetasysEnumValue> GetValues(string id)
         {
             return GetEnumValues(id);
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysEnumValue>> GetValuesAsync(String id)
+        public async Task<IEnumerable<MetasysEnumValue>> GetValuesAsync(string id)
         {
             return await GetEnumValuesAsync(id);
         }
 
         // Edit ----------------------------------------------------------------------------------------------------------------------------------------
         /// <inheritdoc/>
-        public void Edit(String id, string name, IEnumerable<String> values)
+        public void Edit(string id, string name, IEnumerable<string> values)
         {
             EditAsync(id, name, values).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task EditAsync(String id, string name, IEnumerable<String> values)
+        public async Task EditAsync(string id, string name, IEnumerable<string> values)
         {
             CheckVersion(Version);
             try
@@ -147,17 +141,14 @@ namespace JohnsonControls.Metasys.BasicServices
                     //Check if the name is not blank or the length of the list of members is >= 2
                     if (name.Length > 0 && values.Count() >= 2)
                     {
-                        JObject body = new JObject();
-                        JObject item = new JObject();
-                        JObject members = new JObject();
-                        item.Add(propertyName: "name", value: name);
-                        for (int i = 0; i < values.Count(); i++)
+                        var members = new JsonObject();
+                        var valuesList = values.ToList();
+                        for (int i = 0; i < valuesList.Count; i++)
                         {
-                            members.Add(propertyName: id + "." + i.ToString(), value: JObject.FromObject(new { name = values.ToList()[i] }));
+                            members[id + "." + i.ToString()] = new JsonObject { ["name"] = JsonValue.Create(valuesList[i]) };
                         }
-                        item.Add(propertyName: "members", value: members);
-                        body.Add(propertyName: "item", value: item);
-                        // Patch the list of requests and return responses as JToken
+                        var item = new JsonObject { ["name"] = JsonValue.Create(name), ["members"] = members };
+                        var body = new JsonObject { ["item"] = item };
                         var response = await Client.Request(new Url("enumerations")
                                                     .AppendPathSegments(id))
                                                     .PatchJsonAsync(body)
@@ -173,12 +164,12 @@ namespace JohnsonControls.Metasys.BasicServices
 
         // Replace ----------------------------------------------------------------------------------------------------------------------------------------
         /// <inheritdoc/>
-        public void Replace(String id, string name, IEnumerable<String> values)
+        public void Replace(string id, string name, IEnumerable<string> values)
         {
             ReplaceAsync(id, name, values).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task ReplaceAsync(String id, string name, IEnumerable<String> values)
+        public async Task ReplaceAsync(string id, string name, IEnumerable<string> values)
         {
             CheckVersion(Version);
             try
@@ -188,17 +179,13 @@ namespace JohnsonControls.Metasys.BasicServices
                     //Check if the name is not blank or the length of the list of members is >= 2
                     if (id.Length > 0 && name.Length > 0 && values.Count() >= 2)
                     {
-                        JObject body = new JObject();
-                        JObject item = new JObject();
-                        JArray members = new JArray();
-                        item.Add(propertyName: "name", value: name);
-                        foreach (String v in values)
+                        var members = new JsonArray();
+                        foreach (string v in values)
                         {
-                            members.Add(v.ToString());
+                            members.Add(JsonValue.Create(v));
                         }
-                        item.Add(propertyName: "members", value: members);
-                        body.Add(propertyName: "item", value: item);
-                        // Put the list of requests and return responses as JToken
+                        var item = new JsonObject { ["name"] = JsonValue.Create(name), ["members"] = members };
+                        var body = new JsonObject { ["item"] = item };
                         var response = await Client.Request(new Url("enumerations")
                                                         .AppendPathSegments(id))
                                                         .PutJsonAsync(body)

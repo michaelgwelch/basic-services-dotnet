@@ -1,5 +1,5 @@
-﻿using JohnsonControls.Metasys.BasicServices;
-using Newtonsoft.Json;
+using JohnsonControls.Metasys.BasicServices;
+using System.Text.Json;
 using NUnit.Framework;
 using System.Linq;
 using System.Net.Http;
@@ -21,7 +21,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [],
             ""self"": ""https://hostname/api/v2/alarms?pageSize=100&excludePending=false&excludeAcknowledged=false&excludeDiscarded=false&page=1&sort=creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
             var alarms = client.Alarms.Get(new AlarmFilter { }); // No filter
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/alarms")
@@ -39,14 +39,14 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Alarm + @"],
             ""self"": ""https://hostname/api/v2/alarms?pageSize=100&excludePending=false&excludeAcknowledged=false&excludeDiscarded=false&page=1&sort=creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
 
             var alarms = client.Alarms.Get(AlarmFilter);
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/alarms")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            var expected = JsonConvert.DeserializeObject<Alarm>(Alarm);
+            var expected = JsonSerializer.Deserialize<Alarm>(Alarm, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.AreEqual(expected, alarms.Items.ElementAt(0));
         }
 
@@ -59,14 +59,14 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Alarm + @"],
             ""self"": ""https://hostname/api/v2/alarms?pageSize=1&excludePending=false&excludeAcknowledged=false&excludeDiscarded=false&page=1&sort=creationTime""
-            ";
+            }";
             httpTest
              .RespondWith(response);
             var alarms = client.Alarms.Get(AlarmFilter);
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/alarms")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            var expected = JsonConvert.DeserializeObject<Alarm>(Alarm);
+            var expected = JsonSerializer.Deserialize<Alarm>(Alarm, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.AreEqual(expected, alarms.Items.ElementAt(0));
         }
 
@@ -80,7 +80,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Alarm + @"],
             ""self"": ""https://hostname/api/v2/alarms?pageSize=1&excludePending=false&excludeAcknowledged=false&excludeDiscarded=false&page=1&sort=creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
 
             var alarms = client.Alarms.Get(new AlarmFilter { Type = 71 });
@@ -88,7 +88,7 @@ namespace MetasysServices.Tests
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/alarms")
                 .WithVerb(HttpMethod.Get)
                 .Times(1);
-            var expected = JsonConvert.DeserializeObject<Alarm>(Alarm);
+            var expected = JsonSerializer.Deserialize<Alarm>(Alarm, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.AreEqual(expected, alarms.Items.ElementAt(0));
         }
 
@@ -101,7 +101,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [{}],
             ""self"": ""https://hostname/api/v2/alarms?pageSize=1&excludePending=false&excludeAcknowledged=false&excludeDiscarded=false&page=1&sort=creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
             Assert.Throws<MetasysObjectException>(() => client.Alarms.Get(new AlarmFilter { }));
             httpTest.ShouldHaveCalled($"https://hostname/api/v2/alarms")
@@ -121,7 +121,7 @@ namespace MetasysServices.Tests
             ""previous"": null,
             ""items"": [" + Alarm + @"],
             ""self"": ""https://hostname/api/v2/alarms?pageSize=100&excludePending=false&excludeAcknowledged=false&excludeDiscarded=false&page=1&sort=creationTime""
-            ";
+            }";
             httpTest.RespondWith(response);
 
             var e = Assert.Throws<MetasysObjectException>(() =>

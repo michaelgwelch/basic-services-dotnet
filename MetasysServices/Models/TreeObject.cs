@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -10,9 +10,9 @@ namespace JohnsonControls.Metasys.BasicServices
     public class TreeObject
     {
         /// <summary>
-        /// Generic JToken Item.
+        /// Generic JsonNode Item.
         /// </summary>
-        public JToken Item { get; set; }
+        public JsonNode Item { get; set; }
         /// <summary>
         /// List of object's children.
         /// </summary>

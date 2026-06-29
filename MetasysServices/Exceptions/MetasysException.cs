@@ -53,7 +53,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// An object containing details about the failed Http call.
         /// </summary>
-        public HttpCall Call { get; }
+        public FlurlCall Call { get; }
 
         /// <summary>
         /// The string representation of the Http response body from the failed call if any.

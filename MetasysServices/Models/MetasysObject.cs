@@ -1,8 +1,9 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -12,15 +13,15 @@ namespace JohnsonControls.Metasys.BasicServices
     public class MetasysObject : Utils.ObjectUtil
     {
         /// <summary>The item reference of the Metasys object.</summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string ItemReference { set; get; }
 
         /// <summary>The id of the Metasys object.</summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public ObjectId Id { set; get; }
 
         /// <summary>The name of the Metasys object.</summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string Name { set; get; }
 
         /// <summary>The description of the Metasys object.</summary>
@@ -49,7 +50,7 @@ namespace JohnsonControls.Metasys.BasicServices
         public string Category { get; set; }
 
         /// <summary>
-        /// Reference of the Metasys Object uthorization Category.
+        /// Reference of the Metasys Object Authorization Category.
         /// </summary>
         public string CategoryUrl { get; set; }
 
@@ -88,29 +89,30 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <param name="token"></param>
         /// <param name="version"></param>
-        internal MetasysObject(JToken token, ApiVersion version)
+        internal MetasysObject(JsonNode token, ApiVersion version)
         {
             var root = token;
-            var children = root["items"] as JArray;
+            var children = root["items"] as JsonArray;
             Initialize(root, version);
 
             Children = children?.Select(child => new MetasysObject(child, version)).ToList() ?? [];
         }
 
-        internal MetasysObject(JToken token, ApiVersion version, IEnumerable<MetasysObject> children = null, MetasysObjectTypeEnum? type = null)
+        internal MetasysObject(JsonNode token, ApiVersion version, IEnumerable<MetasysObject> children = null, MetasysObjectTypeEnum? type = null)
         {
             Children = children ?? new List<MetasysObject>(); // Return empty list by convention for null
             Type = type;
             Initialize(token, version);
         }
 
-        private void Initialize(JToken token, ApiVersion version)
+        private void Initialize(JsonNode token, ApiVersion version)
         {
-            JObject jobj = token.ToObject<JObject>();
+            JsonObject jobj = token as JsonObject;
             try
             {
-                Id = new Guid(token["id"].Value<string>());
-                ItemReference = token["itemReference"].Value<string>();
+                Id = new Guid((string)token["id"]);
+                ItemReference = (string)token["itemReference"];
+                if (ItemReference == null) throw new ArgumentNullException("itemReference");
             }
             catch (Exception e)
             {
@@ -119,7 +121,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
             try
             {
-                Name = jobj.ContainsKey("name") ? token["name"].Value<string>() : null;
+                Name = jobj?.ContainsKey("name") == true ? (string)token["name"] : null;
             }
             catch
             {
@@ -128,7 +130,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
             try
             {
-                Description = jobj.ContainsKey("description") ? token["description"].Value<string>() : null;
+                Description = jobj?.ContainsKey("description") == true ? (string)token["description"] : null;
             }
             catch
             {
@@ -142,15 +144,15 @@ namespace JohnsonControls.Metasys.BasicServices
                     if (Type == MetasysObjectTypeEnum.Space)
                     {
                         // Set the specific category for Space
-                        Enum.TryParse(token["type"].Value<string>().Split('.').Last(), true, out SpaceTypeEnum spaceType);
+                        Enum.TryParse(((string)token["type"]).Split('.').Last(), true, out SpaceTypeEnum spaceType);
                         Category = spaceType.ToString();
                     }
                 }
                 else
                 {
                     // This applies for v2 and v1.
-                    TypeUrl = token["typeUrl"].Value<string>();
-                    if (Type == MetasysObjectTypeEnum.Space && TypeUrl.Length > 0)
+                    TypeUrl = (string)token["typeUrl"];
+                    if (Type == MetasysObjectTypeEnum.Space && TypeUrl?.Length > 0)
                     {
                         // Set the specific category for Space
                         var typeId = TypeUrl.Split('/').Last();
@@ -170,7 +172,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 try
                 {
                     // Object Type is available since API v3 only on object detail.
-                    ObjectType = jobj.ContainsKey("objectType") ? token["objectType"].Value<string>() : null;
+                    ObjectType = jobj?.ContainsKey("objectType") == true ? (string)token["objectType"] : null;
                 }
                 catch
                 {
@@ -179,7 +181,7 @@ namespace JohnsonControls.Metasys.BasicServices
             }
             try
             {
-                CategoryUrl = jobj.ContainsKey("categoryUrl") ? token["categoryUrl"].Value<string>() : null;
+                CategoryUrl = jobj?.ContainsKey("categoryUrl") == true ? (string)token["categoryUrl"] : null;
             }
             catch
             {
@@ -187,7 +189,7 @@ namespace JohnsonControls.Metasys.BasicServices
             }
             try
             {
-                ObjectCategory = jobj.ContainsKey("objectCategory") ? token["objectCategory"].Value<string>() : null;
+                ObjectCategory = jobj?.ContainsKey("objectCategory") == true ? (string)token["objectCategory"] : null;
             }
             catch
             {
@@ -196,7 +198,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
             try
             {
-                EquipmentDefinitionName = jobj.ContainsKey("type") ? token["type"].Value<string>() : null;
+                EquipmentDefinitionName = jobj?.ContainsKey("type") == true ? (string)token["type"] : null;
             }
             catch
             {
@@ -204,9 +206,9 @@ namespace JohnsonControls.Metasys.BasicServices
             }
             try
             {
-                if (jobj.ContainsKey("classification"))
+                if (jobj?.ContainsKey("classification") == true)
                 {
-                    var tokenValue = token["classification"].Value<string>().Trim();
+                    var tokenValue = ((string)token["classification"]).Trim();
                     Classification = tokenValue == string.Empty ? DefaultClassification : tokenValue;
                 }
                 else
@@ -226,7 +228,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
 
         /// <summary>

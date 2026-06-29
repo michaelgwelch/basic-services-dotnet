@@ -1,6 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Linq;
+using System.Text.Json.Nodes;
 
 namespace JohnsonControls.Metasys.BasicServices.Utils
 {
@@ -16,18 +15,15 @@ namespace JohnsonControls.Metasys.BasicServices.Utils
         /// <param name="jToken"></param>
         /// <param name="field"></param>
         /// <returns></returns>
-        public static string GetJTokenValue(JToken jToken, string field)
+        public static string GetJTokenValue(JsonNode jToken, string field)
         {
             string res = string.Empty;
             try
             {
-                if (jToken != null)
+                if (jToken is JsonObject jObj && jObj.ContainsKey(field) && jObj[field] != null)
                 {
-                    if ((jToken.Contains(field)) && (jToken[field] != null))
-                    {
-                        res = jToken[field].Value<string>();
-                    };
-                };
+                    res = (string)jObj[field];
+                }
             }
             catch (ArgumentNullException e)
             {
@@ -36,24 +32,22 @@ namespace JohnsonControls.Metasys.BasicServices.Utils
             }
             return res;
         }
+
         /// <summary>
         /// Get the date value of a JToken field.
         /// </summary>
         /// <param name="jToken"></param>
         /// <param name="field"></param>
         /// <returns></returns>
-        public static DateTime GetJTokenDate(JToken jToken, string field)
+        public static DateTime GetJTokenDate(JsonNode jToken, string field)
         {
             DateTime res = DateTime.UtcNow;
             try
             {
-                if (jToken != null)
+                if (jToken is JsonObject jObj && jObj.ContainsKey(field) && jObj[field] != null)
                 {
-                    if (jToken.Contains(field) && (jToken[field] != null))
-                    {
-                        res = jToken[field].Value<DateTime>();
-                    };
-                };
+                    res = jObj[field].GetValue<DateTime>();
+                }
             }
             catch (ArgumentNullException e)
             {

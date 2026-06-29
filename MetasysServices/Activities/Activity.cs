@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using System;
 
 namespace JohnsonControls.Metasys.BasicServices
@@ -8,19 +9,19 @@ namespace JohnsonControls.Metasys.BasicServices
     public class Activity
     {
         /// <summary> Activity Unique Identifier </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public ActivityId Id { get; set; }
 
         /// <summary> Item fully qualified reference </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string ItemReference { get; set; }
 
         /// <summary> Object Name </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string ObjectName { get; set; }
 
         /// <summary> Activity Management Status </summary>
-        [JsonProperty(Required = Required.Always)]
+        [JsonRequired]
         public string ActivityManagementStatus { get; set; }
 
         /// <summary> Discarded Time </summary>
@@ -100,7 +101,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 

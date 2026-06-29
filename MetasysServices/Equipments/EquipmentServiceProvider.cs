@@ -1,7 +1,7 @@
 ﻿using Flurl;
 using Flurl.Http;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json.Nodes;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -97,9 +97,9 @@ namespace JohnsonControls.Metasys.BasicServices
                     // Collect Guids to perform read property multiple in "one call" (supporting only presentValue so far)
                     if ((attributeId == "85" | attributeId == "presentValue") && readAttributeValue)
                     {
-                        JToken resp = await Client.Request(new Url("objects")
+                        JsonNode resp = await Client.Request(new Url("objects")
                                             .AppendPathSegments(point.ObjectId, "attributes", "presentValue"))
-                                            .GetJsonAsync<JToken>()
+                                            .GetJsonAsync<JsonNode>()
                                             .ConfigureAwait(false);
                         Variant result = new Variant(point.ObjectId, resp, "presentValue", Culture, Version);
                         point.PresentValue = result;

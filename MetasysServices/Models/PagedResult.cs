@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Web;
 
 namespace JohnsonControls.Metasys.BasicServices
@@ -13,7 +13,7 @@ namespace JohnsonControls.Metasys.BasicServices
     public class PagedResult<T>
     {
         /// <summary>
-        /// The total number of elements. 
+        /// The total number of elements.
         /// </summary>
         public int Total { get; set; }
         /// <summary>
@@ -38,14 +38,13 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         public PagedResult()
         {
-
         }
 
         /// <summary>
-        /// Creates a new PagedResult from a JToken response.
+        /// Creates a new PagedResult from a JsonNode response.
         /// </summary>
         /// <param name="response"></param>
-        public PagedResult(JToken response)
+        public PagedResult(JsonNode response)
         {
             try
             {
@@ -61,18 +60,16 @@ namespace JohnsonControls.Metasys.BasicServices
                 }
                 if (response["total"] != null)
                 {
-                    Total = response["total"].Value<int>();
+                    Total = (int)response["total"];
                 }
                 // Retrieve current page and page size from self url
-                Uri selfUri = new Uri(response["self"].Value<string>());
+                Uri selfUri = new Uri((string)response["self"]);
                 string page = HttpUtility.ParseQueryString(selfUri.Query).Get("page");
                 string pageSize = HttpUtility.ParseQueryString(selfUri.Query).Get("pageSize");
-                // Try to get from next url if it is not specified in the self url
-                //var nextUrl = response["next"].Value<string>();
                 string nextUrl = null;
                 if (response["next"] != null)
                 {
-                    nextUrl = response["next"].Value<string>();
+                    nextUrl = (string)response["next"];
                 }
                 if (pageSize == null && nextUrl != null)
                 {
@@ -86,19 +83,19 @@ namespace JohnsonControls.Metasys.BasicServices
                 else
                 {
                     //Revert this change when Audits response doesn't involve redundant entries
-                    CurrentPage = page.ToString().Contains(",") ? Int32.Parse(page.Split(',')[0]) : Int32.Parse(page);
+                    CurrentPage = page.Contains(",") ? int.Parse(page.Split(',')[0]) : int.Parse(page);
                 }
                 if (pageSize != null)
                 {
                     //Revert this change when Audits response doesn't involve redundant entries
-                    PageSize = pageSize.ToString().Contains(",") ? Int32.Parse(pageSize.Split(',')[0]) : Int32.Parse(pageSize);
+                    PageSize = pageSize.Contains(",") ? int.Parse(pageSize.Split(',')[0]) : int.Parse(pageSize);
                 }
                 else
                 {
                     PageSize = 100; // Default value
                 }
                 PageCount = (int)Math.Ceiling((decimal)Total / PageSize);
-                Items = JsonConvert.DeserializeObject<List<T>>(response["items"].ToString());
+                Items = response["items"].Deserialize<List<T>>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
             catch (Exception e)
             {
@@ -113,7 +110,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }
