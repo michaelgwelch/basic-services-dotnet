@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>12.0</LangVersion>
     <Version>6.0.5</Version>
     <Copyright>© 2020-2024 Johnson Controls</Copyright>
