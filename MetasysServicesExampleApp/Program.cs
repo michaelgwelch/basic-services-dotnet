@@ -9,7 +9,6 @@ namespace MetasysServicesExampleApp
     {
         static void Main(string[] args)
         {
-            var log = new LogInitializer(typeof(Program));
             string connectionDetails;
             try
             {
@@ -42,7 +41,7 @@ namespace MetasysServicesExampleApp
 
                 Console.WriteLine("\nLogging in...");
                 var apiVersion = (ApiVersion)Enum.Parse(typeof(ApiVersion), version);
-                var client = new MetasysClient(hostname, true, apiVersion, logClientErrors: false); // Disable default logging since it is handled in this app.
+                var client = new MetasysClient(hostname, true, apiVersion);
                 // var client = new MetasysClient(hostname, true); // Ignore Certificate Errors
                 // var client = new MetasysClient(hostname, false, ApiVersion.v2, culture);
 
@@ -67,7 +66,7 @@ namespace MetasysServicesExampleApp
             }
             catch (Exception exception)
             {
-                log.Logger.Error(string.Format("An error occured while login - {0}", exception.Message));
+                Console.Error.WriteLine(string.Format("An error occured while login - {0}", exception.Message));
                 Console.WriteLine("\n \nAn Error occurred. Press Enter to exit");
                 Console.ReadLine();
             }

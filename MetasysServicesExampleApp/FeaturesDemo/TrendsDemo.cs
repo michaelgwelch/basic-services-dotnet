@@ -6,12 +6,10 @@ namespace MetasysServicesExampleApp.FeaturesDemo
     public class TrendsDemo
     {
         private MetasysClient client;
-        private LogInitializer log;
 
         public TrendsDemo(MetasysClient client)
         {
             this.client = client;
-            log = new LogInitializer(typeof(TrendsDemo));
         }
         public void Run()
         {
@@ -44,7 +42,7 @@ namespace MetasysServicesExampleApp.FeaturesDemo
             }
             catch (Exception exception)
             {
-                log.Logger.Error(string.Format("An error occured while getting trend information - {0}", exception.Message));
+                Console.Error.WriteLine(string.Format("An error occured while getting trend information - {0}", exception.Message));
                 Console.WriteLine("\n \nAn Error occurred. Press Enter to return to Main Menu");
             }
 

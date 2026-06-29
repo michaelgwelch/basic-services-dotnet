@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Flurl;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
@@ -22,8 +23,8 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <param name="client">The FlurlClient to get response from URL.</param>
         /// <param name="version">The server's Api version.</param>
-        /// <param name="logClientErrors">Set this flag to false to disable logging of client errors.</param>
-        public AlarmServiceProvider(IFlurlClient client, ApiVersion version, bool logClientErrors = true) : base(client, version, logClientErrors)
+        /// <param name="logger">Optional logger; pass null to suppress logging.</param>
+        public AlarmServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
         {
         }
 

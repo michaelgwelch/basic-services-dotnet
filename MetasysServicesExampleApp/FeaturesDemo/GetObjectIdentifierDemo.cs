@@ -7,12 +7,10 @@ namespace MetasysServicesExampleApp.FeaturesDemo
     public class GetObjectIdentifierDemo
     {
         private MetasysClient client;
-        private LogInitializer log;
 
         public GetObjectIdentifierDemo(MetasysClient client)
         {
             this.client = client;
-            log = new LogInitializer(typeof(GetObjectIdentifierDemo));
         }
         public void Run()
         {
@@ -28,7 +26,7 @@ namespace MetasysServicesExampleApp.FeaturesDemo
             }
             catch (Exception exception)
             {
-                log.Logger.Error(string.Format("An error occured while getting object identifier information - {0}", exception.Message));
+                Console.Error.WriteLine(string.Format("An error occured while getting object identifier information - {0}", exception.Message));
                 Console.WriteLine("\n \nAn Error occurred. Press Enter to return to Main Menu");
             }
             Console.ReadLine();

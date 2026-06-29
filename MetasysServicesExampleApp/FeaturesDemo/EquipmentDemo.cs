@@ -8,12 +8,10 @@ namespace MetasysServicesExampleApp.FeaturesDemo
     public class EquipmentDemo
     {
         private MetasysClient client;
-        private LogInitializer log;
 
         public EquipmentDemo(MetasysClient client)
         {
             this.client = client;
-            log = new LogInitializer(typeof(SpacesDemo));
         }
         public void Run()
         {
@@ -31,7 +29,7 @@ namespace MetasysServicesExampleApp.FeaturesDemo
             }
             catch (Exception exception)
             {
-                log.Logger.Error(string.Format("An error occured while getting space information - {0}", exception.Message));
+                Console.Error.WriteLine(string.Format("An error occured while getting space information - {0}", exception.Message));
                 Console.WriteLine("\n \nAn Error occurred. Press Enter to return to Main Menu");
             }
             Console.ReadLine();

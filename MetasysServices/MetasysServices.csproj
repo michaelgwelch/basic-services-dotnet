@@ -37,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="log4Net.config" />
     <None Remove="Resources\MetasysResources.en-US.resources" />
     <None Remove="Resources\MetasysResources.it-IT.resources" />
     <None Remove="Resources\MetasysResources.zh-CN.resources" />
@@ -60,20 +59,13 @@
     <PackageReference Include="3v.EvtSource" Version="2.0.0" />
     <PackageReference Include="CredentialManagement.Standard" Version="1.0.4" />
     <PackageReference Include="Flurl.Http" Version="4.*" />
-    <PackageReference Include="log4net" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\README.md">
       <Link>README.md</Link>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="log4Net.config">
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
 using System;
@@ -26,8 +27,8 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <param name="client"></param>
         /// <param name="version">The server's Api version.</param>
-        /// <param name="logClientErrors">Set this flag to false to disable logging of client errors.</param>
-        public TrendServiceProvider(IFlurlClient client, ApiVersion version, bool logClientErrors = true) : base(client, version, logClientErrors)
+        /// <param name="logger">Optional logger; pass null to suppress logging.</param>
+        public TrendServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
         {
         }
 

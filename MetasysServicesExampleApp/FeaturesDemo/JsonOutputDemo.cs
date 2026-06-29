@@ -13,12 +13,10 @@ namespace MetasysServicesExampleApp.FeaturesDemo
     public class JsonOutputDemo
     {
         private readonly MetasysClient client;
-        private readonly LogInitializer log;
 
         public JsonOutputDemo(MetasysClient client)
         {
             this.client = client;
-            log = new LogInitializer(typeof(JsonOutputDemo));
         }
 
         #region CREATING A CLIENT
@@ -42,7 +40,7 @@ namespace MetasysServicesExampleApp.FeaturesDemo
         private void CreateClientSignature3()
         {
             /* SNIPPET 3: START */
-            var client = new MetasysClient("hostname", logClientErrors: false);
+            var client = new MetasysClient("hostname");
             /* SNIPPET 3: END */
         }
 
@@ -50,14 +48,13 @@ namespace MetasysServicesExampleApp.FeaturesDemo
         {
             /* SNIPPET 4: START */
             // Initialize Logger with your context Class
-            var log = new LogInitializer(typeof(Program));
             try
             {
                 // Your Try logic here...
             }
             catch (Exception ex)
             {
-                log.Logger.Error(string.Format("An error occured - {0}", ex.Message));
+                Console.Error.WriteLine(string.Format("An error occured - {0}", ex.Message));
             }
             /* SNIPPET 4: END */
         }
@@ -1105,7 +1102,7 @@ namespace MetasysServicesExampleApp.FeaturesDemo
             }
             catch (Exception exception)
             {
-                log.Logger.Error(string.Format("{0}", exception.Message));
+                Console.Error.WriteLine(string.Format("{0}", exception.Message));
                 Console.WriteLine("\n \nAn Error occurred. Press Enter to return to Main Menu");
                 Console.ReadLine();
             }

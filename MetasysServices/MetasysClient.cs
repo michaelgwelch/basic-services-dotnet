@@ -1,6 +1,7 @@
 using Flurl;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -211,37 +212,33 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Takes an optional flag for the api version of your Metasys server.
         /// Takes an optional CultureInfo which is useful for formatting numbers and localization of strings. If not specified,
         /// the machine's current culture is used.
-        /// Takes an optional flag for logging client errors. If not specified, it is enabled by default according to log4Net.config file.
+        /// Takes an optional ILoggerFactory for logging. Pass null to disable logging.
         /// </remarks>
         /// <param name="hostname">The hostname of the Metasys server.</param>
         /// <param name="ignoreCertificateErrors">Use to bypass server certificate verification.</param>
         /// <param name="version">The server's Api version.</param>
         /// <param name="cultureInfo">Localization culture for Metasys enumeration translations.</param>
-        /// <param name="logClientErrors">Set this flag to false to disable logging of client errors.</param>
+        /// <param name="loggerFactory">Optional logger factory; pass null to suppress logging.</param>
         /// <param name="timeout">Set the Timeout (in seconds) of the https request.</param>
-        public MetasysClient(string hostname, bool ignoreCertificateErrors = false, ApiVersion version = ApiVersion.v2, CultureInfo cultureInfo = null, bool logClientErrors = true, int timeout = 300)
+        public MetasysClient(string hostname, bool ignoreCertificateErrors = false, ApiVersion version = ApiVersion.v2, CultureInfo cultureInfo = null, ILoggerFactory loggerFactory = null, int timeout = 300)
         {
             try
             {
                 IgnoreCertificateErrors = ignoreCertificateErrors;
                 Hostname = hostname;
                 Timeout = timeout;
-                // Set Metasys culture if specified, otherwise use current machine Culture.
                 Culture = cultureInfo ?? CultureInfo.CurrentCulture;
-                // Set preferences about logging
-                LogClientErrors = logClientErrors;
+                _logger = loggerFactory?.CreateLogger<MetasysClient>();
                 Version = version;
-                // Init related services
-                Activities = new ActivityServiceProvider(Client, version, logClientErrors);
-                Alarms = new AlarmServiceProvider(Client, version, logClientErrors);
-                Audits = new AuditServiceProvider(Client, version, logClientErrors);
-                Enumerations = new EnumerationServiceProvider(Client, version, logClientErrors);
-                Equipments = new EquipmentServiceProvider(Client, version, logClientErrors);
-                NetworkDevices = new NetworkDeviceServiceProvider(Client, version, logClientErrors);
-                Spaces = new SpaceServiceProvider(Client, version, logClientErrors);
-                Trends = new TrendServiceProvider(Client, version, logClientErrors);
-                if (Version > ApiVersion.v3) Streams = new StreamServiceProvider(Client, version, logClientErrors);
-
+                Activities = new ActivityServiceProvider(Client, version, loggerFactory?.CreateLogger<ActivityServiceProvider>());
+                Alarms = new AlarmServiceProvider(Client, version, loggerFactory?.CreateLogger<AlarmServiceProvider>());
+                Audits = new AuditServiceProvider(Client, version, loggerFactory?.CreateLogger<AuditServiceProvider>());
+                Enumerations = new EnumerationServiceProvider(Client, version, loggerFactory?.CreateLogger<EnumerationServiceProvider>());
+                Equipments = new EquipmentServiceProvider(Client, version, loggerFactory?.CreateLogger<EquipmentServiceProvider>());
+                NetworkDevices = new NetworkDeviceServiceProvider(Client, version, loggerFactory?.CreateLogger<NetworkDeviceServiceProvider>());
+                Spaces = new SpaceServiceProvider(Client, version, loggerFactory?.CreateLogger<SpaceServiceProvider>());
+                Trends = new TrendServiceProvider(Client, version, loggerFactory?.CreateLogger<TrendServiceProvider>());
+                if (Version > ApiVersion.v3) Streams = new StreamServiceProvider(Client, version, loggerFactory?.CreateLogger<StreamServiceProvider>());
 
                 base.Version = version;
             }

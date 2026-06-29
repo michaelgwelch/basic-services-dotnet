@@ -1,6 +1,7 @@
 using Flurl;
 using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices.Utils;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -38,40 +39,15 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         public CultureInfo Culture { get; set; }
 
-        /// <summary>
-        /// The log initiliazer.
-        /// </summary>
-        protected LogInitializer Log;
-
-        private bool logClientErrors;
-        /// <summary>
-        /// Set this flag to false to disable logging of client errors.
-        /// </summary>
-        public bool LogClientErrors
-        {
-            get
-            {
-                return logClientErrors;
-            }
-            set
-            {
-                logClientErrors = value;
-                if (logClientErrors)
-                {
-                    // Init logger only when the flag is enabled
-                    Log = new LogInitializer(typeof(BasicServiceProvider));
-                }
-            }
-        }
+        /// <summary>Logger supplied by the caller; null means no logging.</summary>
+        protected ILogger _logger;
 
         /// <summary>
         /// Empty constructor.
         /// </summary>
-        /// <param name="logErrors">Set this flag to false to disable logging of client errors.</param>
-        /// <remarks> Assume Client is initialized by extended class.</remarks>
-        public BasicServiceProvider(bool logErrors = true)
+        /// <remarks>Assume Client is initialized by extended class.</remarks>
+        public BasicServiceProvider()
         {
-            LogClientErrors = logErrors;
         }
 
         /// <summary>
@@ -79,12 +55,12 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <param name="client">The Flurl client.</param>
         /// <param name="version">The server's Api version.</param>
-        /// <param name="logErrors">Set this flag to false to disable logging of client errors.</param>
-        public BasicServiceProvider(IFlurlClient client, ApiVersion version, bool logErrors = true)
+        /// <param name="logger">Optional logger; pass null to suppress logging.</param>
+        public BasicServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client), "FlurlClient can not be null.");
             Version = version;
-            LogClientErrors = logErrors;
+            _logger = logger;
         }
 
         /// <summary>
@@ -658,11 +634,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpNotFoundException"></exception>
         protected void ThrowHttpException(FlurlHttpException e)
         {
-            if (LogClientErrors)
-            {
-                // Perform logging only when enabled by BasicServiceProvider Settings.
-                Log.Logger.Error(e.Message);
-            }
+            _logger?.LogError(e, e.Message);
             if (e.Call.Response != null && (HttpStatusCode)e.Call.Response.StatusCode == HttpStatusCode.NotFound)
             {
                 throw new MetasysHttpNotFoundException(e);

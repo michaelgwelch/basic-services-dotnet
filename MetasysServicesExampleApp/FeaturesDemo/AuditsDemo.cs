@@ -7,12 +7,10 @@ namespace MetasysServicesExampleApp.FeaturesDemo
     public class AuditsDemo
     {
         private MetasysClient client;
-        private LogInitializer log;
 
         public AuditsDemo(MetasysClient client)
         {
             this.client = client;
-            log = new LogInitializer(typeof(AuditsDemo));
         }
         public void Run()
         {
@@ -92,7 +90,7 @@ namespace MetasysServicesExampleApp.FeaturesDemo
             }
             catch (Exception exception)
             {
-                log.Logger.Error(string.Format("An error occured while getting audit information - {0}", exception.Message));
+                Console.Error.WriteLine(string.Format("An error occured while getting audit information - {0}", exception.Message));
                 Console.WriteLine("\n \nAn Error occurred. Press Enter to return to Main Menu");
             }
             Console.ReadLine();

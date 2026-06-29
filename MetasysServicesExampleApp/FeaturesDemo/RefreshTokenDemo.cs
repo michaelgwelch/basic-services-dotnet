@@ -7,12 +7,10 @@ namespace MetasysServicesExampleApp.FeaturesDemo
     public class RefreshTokenDemo
     {
         private MetasysClient client;
-        private LogInitializer log;
 
         public RefreshTokenDemo(MetasysClient client)
         {
             this.client = client;
-            log = new LogInitializer(typeof(RefreshTokenDemo));
         }
         public void Run()
         {
@@ -24,7 +22,7 @@ namespace MetasysServicesExampleApp.FeaturesDemo
             }
             catch (Exception exception)
             {
-                log.Logger.Error(string.Format("An error occured while getting refresh token information - {0}", exception.Message));
+                Console.Error.WriteLine(string.Format("An error occured while getting refresh token information - {0}", exception.Message));
                 Console.WriteLine("\n \nAn Error occurred. Press Enter to return to Main Menu");
             }
 

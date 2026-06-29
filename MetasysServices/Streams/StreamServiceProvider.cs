@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using EvtSource;
 using Flurl;
 using Flurl.Http;
@@ -75,7 +76,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Stream Service Provider
         /// </summary>
-        public StreamServiceProvider(IFlurlClient client, ApiVersion version, bool logClientErrors = true) : base(client, version, logClientErrors)
+        public StreamServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
         {
             _client = client;
             _serverUrl = client.BaseUrl;
