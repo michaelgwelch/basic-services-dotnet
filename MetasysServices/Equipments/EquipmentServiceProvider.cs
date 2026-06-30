@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -34,11 +35,11 @@ namespace JohnsonControls.Metasys.BasicServices
             return FindByIdAsync(equipmentId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<MetasysObject> FindByIdAsync(ObjectId equipmentId)
+        public async Task<MetasysObject> FindByIdAsync(ObjectId equipmentId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
-            var response = await GetRequestAsync("equipment", null, equipmentId).ConfigureAwait(false);
+            var response = await GetRequestAsync("equipment", null, ct, new object[] { equipmentId }).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Equipment);
         }
 
@@ -49,7 +50,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(page, pageSize).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(int? page = null, int? pageSize = null)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(int? page = null, int? pageSize = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
@@ -70,13 +71,13 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetPointsAsync(equipmentId, readAttributeValue).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysPoint>> GetPointsAsync(ObjectId equipmentId, bool readAttributeValue = true)
+        public async Task<IEnumerable<MetasysPoint>> GetPointsAsync(ObjectId equipmentId, bool readAttributeValue = true, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             List<MetasysPoint> points = new List<MetasysPoint>() { }; List<Guid> guids = new List<Guid>();
             List<MetasysPoint> pointsWithAttribute = new List<MetasysPoint>() { };
-            var response = await GetAllAvailablePagesAsync("equipment", null, equipmentId.ToString(), "points").ConfigureAwait(false);
+            var response = await GetAllAvailablePagesAsync("equipment", null, ct, new string[] { equipmentId.ToString(), "points" }).ConfigureAwait(false);
             try
             {
                 foreach (var item in response)
@@ -125,11 +126,11 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetServingASpaceAsync(spaceId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(ObjectId spaceId)
+        public async Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(ObjectId spaceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
-            var spaceEquipment = await GetAllAvailablePagesAsync("spaces", null, spaceId.ToString(), "equipment").ConfigureAwait(false);
+            var spaceEquipment = await GetAllAvailablePagesAsync("spaces", null, ct, new string[] { spaceId.ToString(), "equipment"}).ConfigureAwait(false);
             return ToMetasysObject(spaceEquipment, Version, MetasysObjectTypeEnum.Equipment);
         }
 
@@ -140,11 +141,11 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetHostedByNetworkDeviceAsync(networkDeviceId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetHostedByNetworkDeviceAsync(ObjectId networkDeviceId)
+        public async Task<IEnumerable<MetasysObject>> GetHostedByNetworkDeviceAsync(ObjectId networkDeviceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
-            var spaceEquipment = await GetAllAvailablePagesAsync("networkDevices", null, networkDeviceId.ToString(), "equipment").ConfigureAwait(false);
+            var spaceEquipment = await GetAllAvailablePagesAsync("networkDevices", null, ct, new string[] { networkDeviceId.ToString(), "equipment"}).ConfigureAwait(false);
             return ToMetasysObject(spaceEquipment, Version, MetasysObjectTypeEnum.Equipment);
         }
 
@@ -155,11 +156,11 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetServedByEquipmentAsync(equipmentId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId)
+        public async Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
-            var response = await GetAllAvailablePagesAsync("equipment", null, equipmentId.ToString(), "equipment").ConfigureAwait(false);
+            var response = await GetAllAvailablePagesAsync("equipment", null, ct, new string[] { equipmentId.ToString(), "equipment"}).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Equipment);
         }
 
@@ -170,11 +171,11 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetServingAnEquipmentAsync(equipmentId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetServingAnEquipmentAsync(ObjectId equipmentId)
+        public async Task<IEnumerable<MetasysObject>> GetServingAnEquipmentAsync(ObjectId equipmentId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
-            var spaceEquipment = await GetAllAvailablePagesAsync("equipment", null, equipmentId.ToString(), "upstreamEquipment").ConfigureAwait(false);
+            var spaceEquipment = await GetAllAvailablePagesAsync("equipment", null, ct, new string[] { equipmentId.ToString(), "upstreamEquipment"}).ConfigureAwait(false);
             return ToMetasysObject(spaceEquipment, Version, MetasysObjectTypeEnum.Equipment);
         }
 

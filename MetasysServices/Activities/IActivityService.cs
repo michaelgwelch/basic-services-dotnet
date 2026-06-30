@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -18,7 +19,7 @@ namespace JohnsonControls.Metasys.BasicServices
         PagedResult<Activity> Get(ActivityFilter activityFilter);
 
         /// <inheritdoc cref="IActivityService.Get(ActivityFilter)"/>
-        Task<PagedResult<Activity>> GetAsync(ActivityFilter activityFilter);
+        Task<PagedResult<Activity>> GetAsync(ActivityFilter activityFilter, CancellationToken ct = default);
 
         /// <summary>
         /// Perform batch actions as discard/acknowledge an alarm/audit given a list of requests containing the info necessary to perform the actions.
@@ -36,7 +37,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns>
         /// A list of BatchRequestParam with all the specified attributes.
         /// </returns>
-        Task<IEnumerable<Result>> ActionMultipleAsync(IEnumerable<BatchRequestParam> requests);
+        Task<IEnumerable<Result>> ActionMultipleAsync(IEnumerable<BatchRequestParam> requests, CancellationToken ct = default);
 
 
     }

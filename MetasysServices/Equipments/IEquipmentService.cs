@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -15,7 +16,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         MetasysObject FindById(ObjectId equipmentId);
         /// <inheritdoc cref="IEquipmentService.FindById(ObjectId)"/>
-        Task<MetasysObject> FindByIdAsync(ObjectId equipmentId);
+        Task<MetasysObject> FindByIdAsync(ObjectId equipmentId, CancellationToken ct = default);
 
         // Get ---------------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -26,7 +27,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <remarks> If the param 'page' is specified then it will return only the items associated to the specified page number. Otherwise all the items will be returned. </remarks>
         IEnumerable<MetasysObject> Get(int? page = null, int? pageSize = null);
         /// <inheritdoc cref="IEquipmentService.Get(int?, int?)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(int? page = null, int? pageSize = null);
+        Task<IEnumerable<MetasysObject>> GetAsync(int? page = null, int? pageSize = null, CancellationToken ct = default);
 
         // GetPoints -----------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -38,7 +39,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns></returns>
         IEnumerable<MetasysPoint> GetPoints(ObjectId equipmentId, bool readAttributeValue = true);
         /// <inheritdoc cref="IEquipmentService.GetPoints(ObjectId, bool)"/>
-        Task<IEnumerable<MetasysPoint>> GetPointsAsync(ObjectId equipmentId, bool readAttributeValue = true);
+        Task<IEnumerable<MetasysPoint>> GetPointsAsync(ObjectId equipmentId, bool readAttributeValue = true, CancellationToken ct = default);
 
 
 
@@ -49,7 +50,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="spaceId"></param>
         IEnumerable<MetasysObject> GetServingASpace(ObjectId spaceId);
         /// <inheritdoc cref="IEquipmentService.GetServingASpace(ObjectId)"/>
-        Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(ObjectId spaceId);
+        Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(ObjectId spaceId, CancellationToken ct = default);
 
         // GetHostedByNetworkDevice ------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -58,7 +59,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="networkDeviceId"></param>
         IEnumerable<MetasysObject> GetHostedByNetworkDevice(ObjectId networkDeviceId);
         /// <inheritdoc cref="IEquipmentService.GetServingASpace(ObjectId)"/>
-        Task<IEnumerable<MetasysObject>> GetHostedByNetworkDeviceAsync(ObjectId networkDeviceId);
+        Task<IEnumerable<MetasysObject>> GetHostedByNetworkDeviceAsync(ObjectId networkDeviceId, CancellationToken ct = default);
 
 
         // GetServedByEquipment ----------------------------------------------------------------------------------------------------------------
@@ -67,7 +68,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObject> GetServedByEquipment(ObjectId equipmentId);
         /// <inheritdoc cref="IEquipmentService.GetServedByEquipment(ObjectId)"/>
-        Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId);
+        Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId, CancellationToken ct = default);
 
         // GetServingAnEquipment ------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -76,7 +77,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="equipmentId"></param>
         IEnumerable<MetasysObject> GetServingAnEquipment(ObjectId equipmentId);
         /// <inheritdoc cref="IEquipmentService.GetServingAnEquipment(ObjectId)"/>
-        Task<IEnumerable<MetasysObject>> GetServingAnEquipmentAsync(ObjectId equipmentId);
+        Task<IEnumerable<MetasysObject>> GetServingAnEquipmentAsync(ObjectId equipmentId, CancellationToken ct = default);
 
     }
 }

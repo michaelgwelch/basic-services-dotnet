@@ -10,6 +10,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -149,7 +150,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// If <paramref name="id"/> is specified then this method returns the children of the specified object (and any of their children if level > 1).
         /// If <c>id</c> is <c>null</c> then this method returns the root object (and it's children; unless level is 0).
         /// </returns>
-        protected async Task<List<MetasysObject>> GetObjectsAsync(ObjectId? id, Dictionary<string, string> parameters = null)
+        protected async Task<List<MetasysObject>> GetObjectsAsync(ObjectId? id, Dictionary<string, string> parameters = null, CancellationToken ct = default)
         {
             if (Version <= ApiVersion.v3)
             {
@@ -159,7 +160,7 @@ namespace JohnsonControls.Metasys.BasicServices
             object[] pathSegments = id == null ? ((List<object>)[]).ToArray() : [id.ToString(), "objects"];
 
             parameters["flatten"] = "false";
-            var result = await GetRequestAsync("objects", parameters, pathSegments);
+            var result = await GetRequestAsync("objects", parameters, ct, pathSegments);
             var firstNode = result["items"][0];
             var rootObject = new MetasysObject(firstNode, Version);
 
@@ -185,7 +186,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="levels">The number of levels to retrieve children.</param>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpParsingException"></exception>
-        protected async Task<List<TreeObject>> GetObjectChildrenAsync(ObjectId id, Dictionary<string, string> parameters = null, int levels = 1)
+        protected async Task<List<TreeObject>> GetObjectChildrenAsync(ObjectId id, Dictionary<string, string> parameters = null, int levels = 1, CancellationToken ct = default)
         {
             if (Version > ApiVersion.v3)
             {
@@ -207,7 +208,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 hasNext = false;
                 parameters["page"] = page.ToString();
-                var response = await GetPagedResultsAsync<JsonNode>("objects", parameters, id, "objects").ConfigureAwait(false);
+                var response = await GetPagedResultsAsync<JsonNode>("objects", parameters, ct, new object[] { id, "objects" }).ConfigureAwait(false);
                 //List<JsonNode> listOfItems = response.Items;
                 //if (Version > ApiVersion.v3)
                 //{
@@ -223,7 +224,7 @@ namespace JohnsonControls.Metasys.BasicServices
                             throw new MetasysObjectException(response.ToString(), null);
                         }
                         var objId = ParseObjectIdentifier(item["id"]);
-                        children = await GetObjectChildrenAsync(objId, null, levels - 1).ConfigureAwait(false);
+                        children = await GetObjectChildrenAsync(objId, null, levels - 1, ct).ConfigureAwait(false);
                     }
                     objects.Add(new TreeObject { Item = item, Children = children });
                 }
@@ -241,14 +242,14 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpParsingException"></exception>
-        public async Task<IEnumerable<MetasysObjectType>> GetResourceTypesAsync(string resource, string pathSegment)
+        public async Task<IEnumerable<MetasysObjectType>> GetResourceTypesAsync(string resource, string pathSegment, CancellationToken ct = default)
         {
             List<MetasysObjectType> types = new List<MetasysObjectType>() { };
             try
             {
                 var response = await Client.Request(new Url(resource)
                     .AppendPathSegment(pathSegment))
-                    .GetJsonAsync<JsonNode>()
+                    .GetJsonAsync<JsonNode>(cancellationToken: ct)
                     .ConfigureAwait(false);
                 try
                 {
@@ -370,7 +371,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetEnumValuesAsync(enumerationKey).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        protected async Task<IEnumerable<MetasysEnumValue>> GetEnumValuesAsync(String enumerationKey)
+        protected async Task<IEnumerable<MetasysEnumValue>> GetEnumValuesAsync(String enumerationKey, CancellationToken ct = default)
         {
             List<MetasysEnumValue> enums = new List<MetasysEnumValue>() { };
 
@@ -380,7 +381,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 var response = await Client.Request(new Url("enumerations")
                     .AppendPathSegment(enumerationKey))
-                    .GetJsonAsync<JsonNode>()
+                    .GetJsonAsync<JsonNode>(cancellationToken: ct)
                     .ConfigureAwait(false);
                 try
                 {
@@ -516,14 +517,15 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpTimeoutException"></exception>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpNotFoundException"></exception>
-        protected async Task<JsonNode> GetRequestAsync(string resource, Dictionary<string, string> parameters = null, params object[] pathSegments)
+        protected async Task<JsonNode> GetRequestAsync(string resource, Dictionary<string, string> parameters = null, CancellationToken ct = default, params object[] pathSegments)
         {
 
             JsonNode response = null;
             // Create URL with base resource
             Url url = new Url(resource);
             // Concatenate segments with base resource url
-            url.AppendPathSegments(pathSegments);
+            if (pathSegments != null && pathSegments.Length > 0)
+                url.AppendPathSegments(pathSegments);
             // Set query parameters according to the input dictionary
             if (parameters != null)
             {
@@ -537,7 +539,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 //Client.WithTimeout(300);
                 response = await Client.Request(url)
-                .GetJsonAsync<JsonNode>()
+                .GetJsonAsync<JsonNode>(cancellationToken: ct)
                 .ConfigureAwait(false);
             }
             catch (FlurlHttpException e)
@@ -556,9 +558,9 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="parameters">Query string parameters in Key/Value format.</param>
         /// <param name="pathSegments">Path segments to be used in combination with the main resource.</param>
         /// <returns></returns>
-        protected async Task<PagedResult<T>> GetPagedResultsAsync<T>(string resource, Dictionary<string, string> parameters, params object[] pathSegments)
+        protected async Task<PagedResult<T>> GetPagedResultsAsync<T>(string resource, Dictionary<string, string> parameters, CancellationToken ct = default, object[] pathSegments = null)
         {
-            var response = await GetRequestAsync(resource, parameters, pathSegments).ConfigureAwait(false);
+            var response = await GetRequestAsync(resource, parameters, ct, pathSegments).ConfigureAwait(false);
             return new PagedResult<T>(response);
         }
 
@@ -574,7 +576,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpTimeoutException"></exception>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpNotFoundException"></exception>
-        protected async Task<List<JsonNode>> GetAllAvailablePagesAsync(string resource, Dictionary<string, string> parameters = null, params string[] pathSegments)
+        protected async Task<List<JsonNode>> GetAllAvailablePagesAsync(string resource, Dictionary<string, string> parameters = null, CancellationToken ct = default, string[] pathSegments = null)
         {
             bool hasNext = true;
             bool buildAggregateResponse = true;
@@ -606,7 +608,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 hasNext = false;
                 // Just overwrite page parameter
                 parameters["page"] = page.ToString();
-                var response = await GetPagedResultsAsync<JsonNode>(resource, parameters, pathSegments).ConfigureAwait(false);
+                var response = await GetPagedResultsAsync<JsonNode>(resource, parameters, ct, pathSegments).ConfigureAwait(false);
                 var total = response.Total;
                 if (total > 0)
                 {
@@ -694,7 +696,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="resources"></param>
         /// <param name="paths"></param>
         /// <returns></returns>
-        protected async Task<JsonNode> GetBatchRequestAsync(string endpoint, IEnumerable<ObjectId> ids, IEnumerable<string> resources, params string[] paths)
+        protected async Task<JsonNode> GetBatchRequestAsync(string endpoint, IEnumerable<ObjectId> ids, IEnumerable<string> resources, CancellationToken ct = default, string[] paths = null)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -718,7 +720,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 // Post the list of requests and return responses as JsonNode
                 var response = await Client.Request(url)
-                                            .PostJsonAsync(new BatchRequest { Method = "GET", Requests = objectsRequests })
+                                            .PostJsonAsync(new BatchRequest { Method = "GET", Requests = objectsRequests }, cancellationToken: ct)
                                             .ConfigureAwait(false);
                 responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
             }
@@ -736,7 +738,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="requests"></param>
         /// <param name="paths"></param>
         /// <returns></returns>
-        protected async Task<JsonNode> PostBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, params string[] paths)
+        protected async Task<JsonNode> PostBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, CancellationToken ct = default, string[] paths = null)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -777,7 +779,7 @@ namespace JohnsonControls.Metasys.BasicServices
             {
                 // Post the list of requests and return responses as JsonNode
                 var response = await Client.Request(url)
-                                            .PostJsonAsync(new BatchRequest { Method = "POST", Requests = objectsRequests })
+                                            .PostJsonAsync(new BatchRequest { Method = "POST", Requests = objectsRequests }, cancellationToken: ct)
                                             .ConfigureAwait(false);
 
                 responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
@@ -797,7 +799,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="paths"></param>
         /// <returns></returns>
 
-        protected async Task<JsonNode> PutBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, params string[] paths)
+        protected async Task<JsonNode> PutBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, CancellationToken ct = default, string[] paths = null)
         {
             Boolean isDiscard = false;
             // Create URL with base resource
@@ -842,7 +844,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 {
                     // Post the list of requests and return responses as JsonNode
                     var response = await Client.Request(url)
-                                                .PostJsonAsync(new BatchRequest { Method = "PATCH", Requests = objectsRequests })
+                                                .PostJsonAsync(new BatchRequest { Method = "PATCH", Requests = objectsRequests }, cancellationToken: ct)
                                                 .ConfigureAwait(false);
 
                     responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
@@ -852,7 +854,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 {
                     // Post the list of requests and return responses as JsonNode
                     var response = await Client.Request(url)
-                                                .PostJsonAsync(new BatchRequest { Method = "PUT", Requests = objectsRequests })
+                                                .PostJsonAsync(new BatchRequest { Method = "PUT", Requests = objectsRequests }, cancellationToken: ct)
                                                 .ConfigureAwait(false);
 
                     responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
@@ -871,7 +873,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="endpoint"></param>
         /// <param name="requests"></param>
         /// <returns></returns>
-        protected async Task<JsonNode> PatchBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests)
+        protected async Task<JsonNode> PatchBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, CancellationToken ct = default)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -943,7 +945,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 {
                     // Post the list of requests and return responses as JsonNode
                     var response = await Client.Request(url)
-                                                .PostJsonAsync(new BatchRequest { Method = "PATCH", Requests = objectsRequests })
+                                                .PostJsonAsync(new BatchRequest { Method = "PATCH", Requests = objectsRequests }, cancellationToken: ct)
                                                 .ConfigureAwait(false);
                     responseToken = JsonNode.Parse(await response.GetStringAsync().ConfigureAwait(false));
                 }

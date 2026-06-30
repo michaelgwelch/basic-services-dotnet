@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -19,17 +20,17 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Connect method
         /// </summary>
-        Task<bool> ConnectAsync();
+        Task<bool> ConnectAsync(CancellationToken ct = default);
 
         /// <summary>
         /// Subscribe method
         /// </summary>
-        Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string> query = null, dynamic body = null);
+        Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string> query = null, dynamic body = null, CancellationToken ct = default);
 
         /// <summary>
         /// Unsubscribe method
         /// </summary>
-        Task UnsubscribeAsync(Guid requestId);
+        Task UnsubscribeAsync(Guid requestId, CancellationToken ct = default);
 
         /// <summary>
         /// Access Token
@@ -75,12 +76,12 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Start reading a COV value from the stream
         /// </summary>
-        Task StartReadingCOVAsync(Guid id);
+        Task StartReadingCOVAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// Start reading multiple COV values from the stream
         /// </summary>
-        Task StartReadingCOVAsync(IEnumerable<Guid> ids);
+        Task StartReadingCOVAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
 
         /// <summary>
         /// Stop reading COV Stream Value.
@@ -105,7 +106,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Start collecting the Alarm events from the stream
         /// </summary>
-        Task StartCollectingAlarmsAsync(int maxNumber = 100);
+        Task StartCollectingAlarmsAsync(int maxNumber = 100, CancellationToken ct = default);
 
         /// <summary>
         /// Stop collecting Alarm events from the stream
@@ -125,7 +126,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Start collecting the Audit events from the stream
         /// </summary>
-        Task StartCollectingAuditsAsync(int maxNumber = 100);
+        Task StartCollectingAuditsAsync(int maxNumber = 100, CancellationToken ct = default);
 
         /// <summary>
         /// Stop collecting Audit events from the stream

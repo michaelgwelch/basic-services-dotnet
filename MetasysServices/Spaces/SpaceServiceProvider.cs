@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 ﻿using Flurl.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -28,10 +29,10 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<MetasysObject> FindByIdAsync(ObjectId spaceId)
+        public async Task<MetasysObject> FindByIdAsync(ObjectId spaceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var response = await GetRequestAsync("spaces", null, spaceId).ConfigureAwait(false);
+            var response = await GetRequestAsync("spaces", null, ct, new object[] { spaceId }).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Space);
         }
 
@@ -43,7 +44,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(type, page, pageSize, sort).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             Dictionary<string, string> parameters = new Dictionary<string, string>();
@@ -64,7 +65,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(type, page, pageSize, sort).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string sort = null)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             Dictionary<string, string> parameters = new Dictionary<string, string>();
@@ -86,10 +87,10 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetChildrenAsync(spaceId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetChildrenAsync(ObjectId spaceId)
+        public async Task<IEnumerable<MetasysObject>> GetChildrenAsync(ObjectId spaceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var spaceChildren = await GetAllAvailablePagesAsync("spaces", null, spaceId.ToString(), "spaces").ConfigureAwait(false);
+            var spaceChildren = await GetAllAvailablePagesAsync("spaces", null, ct, new string[] { spaceId.ToString(), "spaces"}).ConfigureAwait(false);
             return ToMetasysObject(spaceChildren, Version, MetasysObjectTypeEnum.Space);
         }
 
@@ -100,7 +101,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetTypesAsync().GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObjectType>> GetTypesAsync()
+        public async Task<IEnumerable<MetasysObjectType>> GetTypesAsync(CancellationToken ct = default)
         {
             if (Version < ApiVersion.v4)
             {
@@ -119,10 +120,10 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetServedByEquipmentAsync(equipmentId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId)
+        public async Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var response = await GetAllAvailablePagesAsync("equipment", null, equipmentId.ToString(), "spaces").ConfigureAwait(false);
+            var response = await GetAllAvailablePagesAsync("equipment", null, ct, new string[] { equipmentId.ToString(), "spaces"}).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Space);
         }
 
@@ -133,10 +134,10 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetServedByNetworkDeviceAsync(networkDeviceId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetServedByNetworkDeviceAsync(ObjectId networkDeviceId)
+        public async Task<IEnumerable<MetasysObject>> GetServedByNetworkDeviceAsync(ObjectId networkDeviceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var response = await GetAllAvailablePagesAsync("networkDevices", null, networkDeviceId.ToString(), "spaces").ConfigureAwait(false);
+            var response = await GetAllAvailablePagesAsync("networkDevices", null, ct, new string[] { networkDeviceId.ToString(), "spaces"}).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Space);
         }
 

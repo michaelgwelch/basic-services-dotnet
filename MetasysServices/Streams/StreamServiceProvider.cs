@@ -197,7 +197,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<bool> ConnectAsync()
+        public async Task<bool> ConnectAsync(CancellationToken ct = default)
         {
             if (_isDisposed) throw new ObjectDisposedException($"StreamingClient for server url {_serverUrl}");
 
@@ -230,7 +230,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string> query = null, dynamic body = null)
+        public async Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string> query = null, dynamic body = null, CancellationToken ct = default)
         {
             string bodyContent = body != null ? JsonSerializer.Serialize(body) : null;
             string subscriptionInfoId = "";
@@ -269,7 +269,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task UnsubscribeAsync(Guid requestId)
+        public async Task UnsubscribeAsync(Guid requestId, CancellationToken ct = default)
         {
             if (_isDisposed) throw new ObjectDisposedException($"StreamingClient for server url {_serverUrl}");
 
@@ -394,7 +394,7 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
 
-        private async Task HandleActivitySubscriptionAsync(EventSourceMessageEventArgs e)
+        private async Task HandleActivitySubscriptionAsync(EventSourceMessageEventArgs e, CancellationToken ct = default)
         {
             var alarm = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(e.Message);
             var subscriptionId = alarm["subscriptionIds"][0].GetString(); // FIX me, could get multiple subscription id on a message
@@ -414,7 +414,7 @@ namespace JohnsonControls.Metasys.BasicServices
             await _channel.Writer.WriteAsync(newAlarm);
         }
 
-        private async Task HandleAttibuteValueSubscriptionAsync(EventSourceMessageEventArgs e)
+        private async Task HandleAttibuteValueSubscriptionAsync(EventSourceMessageEventArgs e, CancellationToken ct = default)
         {
             var covObjects = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(e.Message);
             foreach (KeyValuePair<string, JsonElement> kvp in covObjects)
@@ -445,7 +445,7 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
 
-        private async Task HandleAttibuteValueSubscription2Async(EventSourceMessageEventArgs e)
+        private async Task HandleAttibuteValueSubscription2Async(EventSourceMessageEventArgs e, CancellationToken ct = default)
         {
             String msg = e.Message;
             JsonObject covObjects = JsonNode.Parse(msg) as JsonObject;
@@ -561,7 +561,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return values;
         }
 
-        private async Task HandleHelloEventAsync(EventSourceMessageEventArgs e)
+        private async Task HandleHelloEventAsync(EventSourceMessageEventArgs e, CancellationToken ct = default)
         {
             // _logger.LogDebug($"Got a hello with streamId {e.Message} from server {_serverUrl}");
             _streamId = JsonNode.Parse(e.Message).ToJsonString();
@@ -593,7 +593,7 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
 
-        private async Task UnsubscribeInternalAsync(SubscriptionInfo subscriptionInfo)
+        private async Task UnsubscribeInternalAsync(SubscriptionInfo subscriptionInfo, CancellationToken ct = default)
         {
             _ = await subscriptionInfo.Url
                 .WithOAuthBearerToken(Token)
@@ -682,7 +682,7 @@ namespace JohnsonControls.Metasys.BasicServices
             StartReadingCOVAsync(id).GetAwaiter().GetResult();
         }
         /// <inheritdoc />
-        public async Task StartReadingCOVAsync(Guid id)
+        public async Task StartReadingCOVAsync(Guid id, CancellationToken ct = default)
         {
             if (!KeepCOVReading)
             {
@@ -696,7 +696,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
         //StartReadingCOVAsync (multiple) ---------------------------------------------------------------------------------------
         /// <inheritdoc />
-        public async Task StartReadingCOVAsync(IEnumerable<Guid> ids)
+        public async Task StartReadingCOVAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
         {
             if (!KeepCOVReading)
             {
@@ -776,7 +776,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
         //StartCollectingAlarmsAsync ------------------------------------------------------------------------------------------------
         /// <inheritdoc />
-        public async Task StartCollectingAlarmsAsync(int maxNumber = 100)
+        public async Task StartCollectingAlarmsAsync(int maxNumber = 100, CancellationToken ct = default)
         {
             if (!KeepAlarmCollecting)
             {
@@ -844,7 +844,7 @@ namespace JohnsonControls.Metasys.BasicServices
         private bool KeepAuditCollecting = false;
 
         /// <inheritdoc />
-        public async Task StartCollectingAuditsAsync(int maxNumber = 100)
+        public async Task StartCollectingAuditsAsync(int maxNumber = 100, CancellationToken ct = default)
         {
             if (!KeepAuditCollecting)
             {

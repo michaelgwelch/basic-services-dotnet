@@ -23,8 +23,8 @@ namespace MetasysServices.Tests
         /// </summary>
         protected TimeFilter TimeFilter = new()
         {
-            StartTime = new DateTime(2020, 1, 20),
-            EndTime = new DateTime(2020, 1, 21)
+            StartTime = new DateTimeOffset(2020, 1, 20, 0, 0, 0, TimeSpan.Zero),
+            EndTime = new DateTimeOffset(2020, 1, 21, 0, 0, 0, TimeSpan.Zero)
         };
 
         /// <summary>
@@ -32,8 +32,8 @@ namespace MetasysServices.Tests
         /// </summary>
         protected AlarmFilter AlarmFilter = new()
         {
-            StartTime = new DateTime(2019, 12, 20),
-            EndTime = new DateTime(2020, 1, 21)
+            StartTime = new DateTimeOffset(2019, 12, 20, 0, 0, 0, TimeSpan.Zero),
+            EndTime = new DateTimeOffset(2020, 1, 21, 0, 0, 0, TimeSpan.Zero)
         };
 
         protected string AlarmAnnotation = @"{
@@ -110,8 +110,8 @@ namespace MetasysServices.Tests
         /// </summary>
         protected AuditFilter AuditFilter = new()
         {
-            StartTime = new DateTime(2019, 12, 20),
-            EndTime = new DateTime(2020, 1, 21)
+            StartTime = new DateTimeOffset(2019, 12, 20, 0, 0, 0, TimeSpan.Zero),
+            EndTime = new DateTimeOffset(2020, 1, 21, 0, 0, 0, TimeSpan.Zero)
         };
 
         // Sample audit response pasted from Postman response

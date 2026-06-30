@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -21,7 +22,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysObjectException"></exception>
         List<MetasysAttribute> GetTrendedAttributes(ObjectId id);
         /// <inheritdoc cref="ITrendService.GetTrendedAttributes(ObjectId)"/>
-        Task<List<MetasysAttribute>> GetTrendedAttributesAsync(ObjectId id);
+        Task<List<MetasysAttribute>> GetTrendedAttributesAsync(ObjectId id, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves available samples for the given object attribute, filtered by startTime and endTime.
@@ -39,7 +40,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysObjectException"></exception>
         PagedResult<Sample> GetSamples(ObjectId objectId, int attributeId, TimeFilter filter);
         /// <inheritdoc cref="ITrendService.GetSamples(ObjectId, int, TimeFilter)"/>
-        Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, int attributeId, TimeFilter filter);
+        Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, int attributeId, TimeFilter filter, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves available samples for the given object attribute, filtered by startTime and endTime.
@@ -57,7 +58,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysObjectException"></exception>
         PagedResult<Sample> GetSamples(ObjectId objectId, AttributeEnumSet attributeName, TimeFilter filter);
         /// <inheritdoc cref="ITrendService.GetSamples(ObjectId, AttributeEnumSet, TimeFilter)"/>
-        Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, AttributeEnumSet attributeName, TimeFilter filter);
+        Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, AttributeEnumSet attributeName, TimeFilter filter, CancellationToken ct = default);
 
         /// <summary>
         /// Get the list of trended attributes for the given Network Device.
@@ -72,7 +73,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysObjectException"></exception>
         List<MetasysAttribute> GetNetDevTrendedAttributes(ObjectId id);
         /// <inheritdoc cref="ITrendService.GetNetDevTrendedAttributes(ObjectId)"/>
-        Task<List<MetasysAttribute>> GetNetDevTrendedAttributesAsync(ObjectId id);
+        Task<List<MetasysAttribute>> GetNetDevTrendedAttributesAsync(ObjectId id, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves available samples for the given network device attribute, filtered by startTime and endTime.
@@ -90,7 +91,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysObjectException"></exception>
         PagedResult<Sample> GetNetDevSamples(ObjectId networkDeviceId, int attributeId, TimeFilter filter);
         /// <inheritdoc cref="ITrendService.GetNetDevSamples(ObjectId, int, TimeFilter)"/>
-        Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, int attributeId, TimeFilter filter);
+        Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, int attributeId, TimeFilter filter, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves available samples for the given network device attribute, filtered by startTime and endTime.
@@ -108,7 +109,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysObjectException"></exception>
         PagedResult<Sample> GetNetDevSamples(ObjectId networkDeviceId, AttributeEnumSet attributeName, TimeFilter filter);
         /// <inheritdoc cref="ITrendService.GetNetDevSamples(ObjectId, AttributeEnumSet, TimeFilter)"/>
-        Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, AttributeEnumSet attributeName, TimeFilter filter);
+        Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, AttributeEnumSet attributeName, TimeFilter filter, CancellationToken ct = default);
 
     }
 }

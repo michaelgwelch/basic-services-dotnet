@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -19,7 +20,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns>The specified alarm details.</returns>
         MetasysObject FindById(Guid networkDeviceId);
         /// <inheritdoc cref="INetworkDeviceService.FindById(Guid)"/>
-        Task<MetasysObject> FindByIdAsync(Guid networkDeviceId);
+        Task<MetasysObject> FindByIdAsync(Guid networkDeviceId, CancellationToken ct = default);
 
         // FindById ---------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -30,7 +31,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpParsingException"></exception>
         IEnumerable<MetasysObject> Get(string type = null);
         /// <inheritdoc cref="INetworkDeviceService.Get(string)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(string type = null);
+        Task<IEnumerable<MetasysObject>> GetAsync(string type = null, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves a collection of network devices.
@@ -38,7 +39,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="classificationEnum"></param>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpParsingException"></exception>
-        Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceClassificationEnum classificationEnum);
+        Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceClassificationEnum classificationEnum, CancellationToken ct = default);
 
         // Get -------------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -49,7 +50,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpParsingException"></exception>
         IEnumerable<MetasysObject> Get(NetworkDeviceTypeEnum networkDevicetype);
         /// <inheritdoc cref="INetworkDeviceService.Get(NetworkDeviceTypeEnum)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceTypeEnum networkDevicetype);
+        Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceTypeEnum networkDevicetype, CancellationToken ct = default);
 
         // GetTypes --------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -59,7 +60,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpParsingException"></exception>
         IEnumerable<MetasysObjectType> GetTypes();
         /// <inheritdoc cref="INetworkDeviceService.GetTypes()"/>
-        Task<IEnumerable<MetasysObjectType>> GetTypesAsync();
+        Task<IEnumerable<MetasysObjectType>> GetTypesAsync(CancellationToken ct = default);
 
         // GetChildren ------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -67,7 +68,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObject> GetChildren(Guid networkDeviceId);
         /// <inheritdoc cref="INetworkDeviceService.GetChildren(Guid)"/>
-        Task<IEnumerable<MetasysObject>> GetChildrenAsync(Guid networkDeviceId);
+        Task<IEnumerable<MetasysObject>> GetChildrenAsync(Guid networkDeviceId, CancellationToken ct = default);
 
         // GetHostingAnEquipment --------------------------------------------------------------------------------------------------
         /// <summary>
@@ -75,7 +76,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObject> GetHostingAnEquipment(Guid equipmentId);
         /// <inheritdoc cref="INetworkDeviceService.GetHostingAnEquipment(Guid)"/>
-        Task<IEnumerable<MetasysObject>> GetHostingAnEquipmentAsync(Guid equipmentId);
+        Task<IEnumerable<MetasysObject>> GetHostingAnEquipmentAsync(Guid equipmentId, CancellationToken ct = default);
 
         // GetServingASpace -------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -83,7 +84,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObject> GetServingASpace(Guid spaceId);
         /// <inheritdoc cref="INetworkDeviceService.GetServingASpace(Guid)"/>
-        Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(Guid spaceId);
+        Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(Guid spaceId, CancellationToken ct = default);
 
     }
 }

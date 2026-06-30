@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -49,13 +50,13 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, int attributeId, TimeFilter filter)
+        public async Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, int attributeId, TimeFilter filter, CancellationToken ct = default)
         {
             //Note: this method is valid only for API version v2 and v3
             if (Version < ApiVersion.v2 | Version > ApiVersion.v3) { throw new MetasysUnsupportedApiVersion(Version.ToString()); }
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JsonNode>("objects", ToDictionary(filter), objectId, "attributes", attributeId, "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("objects", ToDictionary(filter), ct, new object[] { objectId, "attributes", attributeId, "samples" }).ConfigureAwait(false);
             // Read full attribute from url
             foreach (JsonNode s in response.Items)
             {
@@ -126,13 +127,13 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, AttributeEnumSet attributeName, TimeFilter filter)
+        public async Task<PagedResult<Sample>> GetSamplesAsync(ObjectId objectId, AttributeEnumSet attributeName, TimeFilter filter, CancellationToken ct = default)
         {
             //Note: this method is valid for API version > v3
             if (Version < ApiVersion.v4) { throw new MetasysUnsupportedApiVersion(Version.ToString()); }
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JsonNode>("objects", ToDictionary(filter), objectId, "trendedAttributes", attributeName.ToString(), "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("objects", ToDictionary(filter), ct, new object[] { objectId, "trendedAttributes", attributeName.ToString(), "samples" }).ConfigureAwait(false);
             // Read full attribute from url
             foreach (JsonNode s in response.Items)
             {
@@ -174,13 +175,13 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetTrendedAttributesAsync(id).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<List<MetasysAttribute>> GetTrendedAttributesAsync(ObjectId id)
+        public async Task<List<MetasysAttribute>> GetTrendedAttributesAsync(ObjectId id, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             List<MetasysAttribute> objectAttributes = new List<MetasysAttribute>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            JsonNode attributes = (await GetRequestAsync("objects", null, id, "trendedAttributes").ConfigureAwait(false));
+            JsonNode attributes = (await GetRequestAsync("objects", null, ct, new object[] { id, "trendedAttributes" }).ConfigureAwait(false));
             // Read full attribute from url
             if (!(attributes["items"] is JsonArray))
             {
@@ -237,13 +238,13 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetNetDevTrendedAttributesAsync(id).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<List<MetasysAttribute>> GetNetDevTrendedAttributesAsync(ObjectId id)
+        public async Task<List<MetasysAttribute>> GetNetDevTrendedAttributesAsync(ObjectId id, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             List<MetasysAttribute> objectAttributes = new List<MetasysAttribute>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            JsonNode attributes = (await GetRequestAsync("networkDevices", null, id, "trendedAttributes").ConfigureAwait(false));
+            JsonNode attributes = (await GetRequestAsync("networkDevices", null, ct, new object[] { id, "trendedAttributes" }).ConfigureAwait(false));
             // Read full attribute from url
             if (!(attributes["items"] is JsonArray))
             {
@@ -310,13 +311,13 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, int attributeId, TimeFilter filter)
+        public async Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, int attributeId, TimeFilter filter, CancellationToken ct = default)
         {
             //Note: this method is valid only for API version v2 and v3
             if (Version < ApiVersion.v2 | Version > ApiVersion.v3) { throw new MetasysUnsupportedApiVersion(Version.ToString()); }
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JsonNode>("networkDevices", ToDictionary(filter), networkDeviceId, "attributes", attributeId, "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("networkDevices", ToDictionary(filter), ct, new object[] { networkDeviceId, "attributes", attributeId, "samples" }).ConfigureAwait(false);
             // Read full attribute from url
             foreach (JsonNode s in response.Items)
             {
@@ -372,14 +373,14 @@ namespace JohnsonControls.Metasys.BasicServices
             }
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, AttributeEnumSet attributeName, TimeFilter filter)
+        public async Task<PagedResult<Sample>> GetNetDevSamplesAsync(ObjectId networkDeviceId, AttributeEnumSet attributeName, TimeFilter filter, CancellationToken ct = default)
         {
             //Note: this method is valid for API version > v3
             if (Version < ApiVersion.v4) { throw new MetasysUnsupportedApiVersion(Version.ToString()); }
 
             List<Sample> objectSamples = new List<Sample>();
             // Perform a generic call using objects resource valid for Network Devices as well
-            var response = await GetPagedResultsAsync<JsonNode>("networkDevices", ToDictionary(filter), networkDeviceId, "trendedAttributes", attributeName.ToString(), "samples").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<JsonNode>("networkDevices", ToDictionary(filter), ct, new object[] { networkDeviceId, "trendedAttributes", attributeName.ToString(), "samples" }).ConfigureAwait(false);
             // Read full attribute from url
             foreach (JsonNode s in response.Items)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -26,7 +27,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="annotationText">Annotation Text (optional).</param>
         void Acknowledge(ActivityId alarmId, string annotationText = null);
         /// <inheritdoc cref="IAlarmsService.Acknowledge(ActivityId, String)"/>
-        Task AcknowledgeAsync(ActivityId alarmId, string annotationText = null);
+        Task AcknowledgeAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default);
 
         /// <summary>
         /// Set an Alarm as 'discarded'
@@ -35,7 +36,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="annotationText">Annotation Text (optional).</param>
         void Discard(ActivityId alarmId, string annotationText = null);
         /// <inheritdoc cref="IAlarmsService.Discard(ActivityId, String)"/>
-        Task DiscardAsync(ActivityId alarmId, string annotationText = null);
+        Task DiscardAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default);
 
         // --------------------------------------------------------------------------------------------------
         /// <summary>
@@ -46,7 +47,7 @@ namespace JohnsonControls.Metasys.BasicServices
         Alarm FindById(ActivityId alarmId);
 
         /// <inheritdoc cref="IAlarmsService.FindById(ActivityId)"/>
-        Task<Alarm> FindByIdAsync(ActivityId alarmId);
+        Task<Alarm> FindByIdAsync(ActivityId alarmId, CancellationToken ct = default);
 
         // --------------------------------------------------------------------------------------------------
         /// <summary>
@@ -57,7 +58,7 @@ namespace JohnsonControls.Metasys.BasicServices
         PagedResult<Alarm> Get(AlarmFilter alarmFilter);
 
         /// <inheritdoc cref="IAlarmsService.Get(AlarmFilter)"/>
-        Task<PagedResult<Alarm>> GetAsync(AlarmFilter alarmFilter);
+        Task<PagedResult<Alarm>> GetAsync(AlarmFilter alarmFilter, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves a collection of alarms from API v4 on.
@@ -67,7 +68,7 @@ namespace JohnsonControls.Metasys.BasicServices
         PagedResult<Alarm> Get(AlarmFilterV4Plus alarmFilter);
 
         /// <inheritdoc cref="IAlarmsService.Get(AlarmFilterV4Plus)"/>
-        Task<PagedResult<Alarm>> GetAsync(AlarmFilterV4Plus alarmFilter);
+        Task<PagedResult<Alarm>> GetAsync(AlarmFilterV4Plus alarmFilter, CancellationToken ct = default);
 
         // --------------------------------------------------------------------------------------------------
         /// <summary>
@@ -78,7 +79,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<AlarmAnnotation> GetAnnotations(ActivityId alarmId);
 
         /// <inheritdoc cref="IAlarmsService.GetAnnotations(ActivityId)"/>
-        Task<IEnumerable<AlarmAnnotation>> GetAnnotationsAsync(ActivityId alarmId);
+        Task<IEnumerable<AlarmAnnotation>> GetAnnotationsAsync(ActivityId alarmId, CancellationToken ct = default);
 
         // --------------------------------------------------------------------------------------------------
         /// <summary>
@@ -90,7 +91,7 @@ namespace JohnsonControls.Metasys.BasicServices
         PagedResult<Alarm> GetForNetworkDevice(ObjectId networkDeviceId, AlarmFilter alarmFilter);
 
         /// <inheritdoc cref="IAlarmsService.GetForNetworkDevice(ObjectId, AlarmFilter)"/>
-        Task<PagedResult<Alarm>> GetForNetworkDeviceAsync(ObjectId networkDeviceId, AlarmFilter alarmFilter);
+        Task<PagedResult<Alarm>> GetForNetworkDeviceAsync(ObjectId networkDeviceId, AlarmFilter alarmFilter, CancellationToken ct = default);
 
         // --------------------------------------------------------------------------------------------------
         /// <summary>
@@ -102,7 +103,7 @@ namespace JohnsonControls.Metasys.BasicServices
         PagedResult<Alarm> GetForObject(ObjectId objectId, AlarmFilter alarmFilter);
 
         /// <inheritdoc cref="AlarmServiceProvider.GetForObject(ObjectId, AlarmFilter)"/>
-        Task<PagedResult<Alarm>> GetForObjectAsync(ObjectId objectId, AlarmFilter alarmFilter);
+        Task<PagedResult<Alarm>> GetForObjectAsync(ObjectId objectId, AlarmFilter alarmFilter, CancellationToken ct = default);
 
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -16,7 +17,7 @@ namespace JohnsonControls.Metasys.BasicServices
         Audit FindById(ActivityId auditId);
 
         /// <inheritdoc cref="IAuditService.FindById(ActivityId)"/>
-        Task<Audit> FindByIdAsync(ActivityId auditId);
+        Task<Audit> FindByIdAsync(ActivityId auditId, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves a collection of audits.
@@ -26,7 +27,7 @@ namespace JohnsonControls.Metasys.BasicServices
         PagedResult<Audit> Get(AuditFilter auditFilter);
 
         /// <inheritdoc cref="IAuditService.Get(AuditFilter)"/>
-        Task<PagedResult<Audit>> GetAsync(AuditFilter auditFilter);
+        Task<PagedResult<Audit>> GetAsync(AuditFilter auditFilter, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieve a collection of Audit Annotations.
@@ -36,7 +37,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<AuditAnnotation> GetAnnotations(ActivityId auditId);
 
         /// <inheritdoc cref="IAuditService.GetAnnotations(ActivityId)"/>
-        Task<IEnumerable<AuditAnnotation>> GetAnnotationsAsync(ActivityId auditId);
+        Task<IEnumerable<AuditAnnotation>> GetAnnotationsAsync(ActivityId auditId, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves a collection of audits for the specified object.
@@ -47,7 +48,7 @@ namespace JohnsonControls.Metasys.BasicServices
         PagedResult<Audit> GetForObject(ObjectId objectId, AuditFilter auditFilter);
 
         /// <inheritdoc cref="IAuditService.GetForObject(ObjectId, AuditFilter)"/>
-        Task<PagedResult<Audit>> GetForObjectAsync(ObjectId objectId, AuditFilter auditFilter);
+        Task<PagedResult<Audit>> GetForObjectAsync(ObjectId objectId, AuditFilter auditFilter, CancellationToken ct = default);
 
         /// <summary>
         /// Discard an Audit.
@@ -58,7 +59,7 @@ namespace JohnsonControls.Metasys.BasicServices
         void Discard(ActivityId id, string annotationText);
 
         /// <inheritdoc cref="IAuditService.Discard(ActivityId , string)"/>
-        Task DiscardAsync(ActivityId id, string annotationText);
+        Task DiscardAsync(ActivityId id, string annotationText, CancellationToken ct = default);
 
         /// <summary>
         /// Add an Annotation to the specified Audit.
@@ -69,7 +70,7 @@ namespace JohnsonControls.Metasys.BasicServices
         void AddAnnotation(ActivityId id, string text);
 
         /// <inheritdoc cref="IAuditService.AddAnnotation(ActivityId, string)"/>
-        Task AddAnnotationAsync(ActivityId id, string text);
+        Task AddAnnotationAsync(ActivityId id, string text, CancellationToken ct = default);
 
         /// <summary>
         /// Add many Annotations given a list of requests containing the Id of the Audits and the text of the Annotations.
@@ -87,7 +88,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns>
         /// A list of BatchRequestParam with all the specified attributes.
         /// </returns>
-        Task<IEnumerable<Result>> AddAnnotationMultipleAsync(IEnumerable<BatchRequestParam> requests);
+        Task<IEnumerable<Result>> AddAnnotationMultipleAsync(IEnumerable<BatchRequestParam> requests, CancellationToken ct = default);
 
         /// <summary>
         /// Discard many Audit given a list of requests containing the Id of the Audits and the text for the Annotations.
@@ -105,7 +106,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns>
         /// A list of BatchRequestParam with all the specified attributes.
         /// </returns>
-        Task<IEnumerable<Result>> DiscardMultipleAsync(IEnumerable<BatchRequestParam> requests);
+        Task<IEnumerable<Result>> DiscardMultipleAsync(IEnumerable<BatchRequestParam> requests, CancellationToken ct = default);
 
     }
 }

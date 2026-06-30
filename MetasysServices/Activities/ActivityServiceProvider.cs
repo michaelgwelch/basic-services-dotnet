@@ -4,6 +4,7 @@ using System;
 using System.Text.Json.Nodes;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -29,14 +30,14 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(activityFilter).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Activity>> GetAsync(ActivityFilter activityFilter)
+        public async Task<PagedResult<Activity>> GetAsync(ActivityFilter activityFilter, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             if (Version >= ApiVersion.v4)
             {
                 List<Activity> activities = new List<Activity>();
-                var response = await GetPagedResultsAsync<Activity>("activities", ToDictionary(activityFilter)).ConfigureAwait(false);
+                var response = await GetPagedResultsAsync<Activity>("activities", ToDictionary(activityFilter), ct).ConfigureAwait(false);
 
                 foreach (var item in response.Items)
                     activities.Add(item);
@@ -66,7 +67,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<Result>> ActionMultipleAsync(IEnumerable<BatchRequestParam> requests)
+        public async Task<IEnumerable<Result>> ActionMultipleAsync(IEnumerable<BatchRequestParam> requests, CancellationToken ct = default)
         {
             try
             {

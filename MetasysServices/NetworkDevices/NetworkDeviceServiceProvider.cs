@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -30,10 +31,10 @@ namespace JohnsonControls.Metasys.BasicServices
             return FindByIdAsync(networkDeviceId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<MetasysObject> FindByIdAsync(Guid networkDeviceId)
+        public async Task<MetasysObject> FindByIdAsync(Guid networkDeviceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var response = await GetRequestAsync("networkDevices", null, networkDeviceId).ConfigureAwait(false);
+            var response = await GetRequestAsync("networkDevices", null, ct, new object[] { networkDeviceId }).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Equipment);
         }
 
@@ -44,12 +45,12 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(type).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceClassificationEnum classificationEnum)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceClassificationEnum classificationEnum, CancellationToken ct = default)
         {
             return await GetByClassificationAsync(classificationEnum.ToString());
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(string type = null)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(string type = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             // Note: the name of the parameter 'Type' changes according to the API version
@@ -59,7 +60,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetByClassificationAsync(string classification = null)
+        public async Task<IEnumerable<MetasysObject>> GetByClassificationAsync(string classification = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             var response = await this.GetAllAvailablePagesAsync("networkDevices", new Dictionary<string, string> { { "classification", classification } }).ConfigureAwait(false);
@@ -72,7 +73,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(networkDevicetype).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceTypeEnum networkDevicetype)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(NetworkDeviceTypeEnum networkDevicetype, CancellationToken ct = default)
         {
             CheckVersion(Version);
             string type = Convert.ToString((int)networkDevicetype);
@@ -86,7 +87,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetTypesAsync().GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObjectType>> GetTypesAsync()
+        public async Task<IEnumerable<MetasysObjectType>> GetTypesAsync(CancellationToken ct = default)
         {
             CheckVersion(Version);
             if (Version < ApiVersion.v4)
@@ -102,10 +103,10 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetChildrenAsync(networkDeviceId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetChildrenAsync(Guid networkDeviceId)
+        public async Task<IEnumerable<MetasysObject>> GetChildrenAsync(Guid networkDeviceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var response = await GetAllAvailablePagesAsync("networkDevices", null, networkDeviceId.ToString(), "networkDevices").ConfigureAwait(false);
+            var response = await GetAllAvailablePagesAsync("networkDevices", null, ct, new string[] { networkDeviceId.ToString(), "networkDevices"}).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Object);
         }
 
@@ -116,10 +117,10 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetHostingAnEquipmentAsync(equipmentId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetHostingAnEquipmentAsync(Guid equipmentId)
+        public async Task<IEnumerable<MetasysObject>> GetHostingAnEquipmentAsync(Guid equipmentId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var response = await GetAllAvailablePagesAsync("equipment", null, equipmentId.ToString(), "networkDevices").ConfigureAwait(false);
+            var response = await GetAllAvailablePagesAsync("equipment", null, ct, new string[] { equipmentId.ToString(), "networkDevices"}).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Object);
         }
 
@@ -130,16 +131,16 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetServingASpaceAsync(spaceId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(Guid spaceId)
+        public async Task<IEnumerable<MetasysObject>> GetServingASpaceAsync(Guid spaceId, CancellationToken ct = default)
         {
             CheckVersion(Version);
-            var response = await GetAllAvailablePagesAsync("spaces", null, spaceId.ToString(), "networkDevices").ConfigureAwait(false);
+            var response = await GetAllAvailablePagesAsync("spaces", null, ct, new string[] { spaceId.ToString(), "networkDevices"}).ConfigureAwait(false);
             return ToMetasysObject(response, Version, MetasysObjectTypeEnum.Object);
         }
 
 
 
-        private async Task<IEnumerable<MetasysObjectType>> RetrieveNetworkDeviceTypesAsync()
+        private async Task<IEnumerable<MetasysObjectType>> RetrieveNetworkDeviceTypesAsync(CancellationToken ct = default)
         {
             List<MetasysObjectType> types = new List<MetasysObjectType>() { };
             try

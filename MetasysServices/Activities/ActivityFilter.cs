@@ -14,12 +14,12 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Earliest start time.
         /// </summary>
-        public DateTime? StartTime { get; set; }
+        public DateTimeOffset? StartTime { get; set; }
 
         /// <summary>
         /// Latest end time.
         /// </summary>
-        public DateTime? EndTime { get; set; }
+        public DateTimeOffset? EndTime { get; set; }
 
         /// <summary> 
         /// The flag to include discarded activity. 

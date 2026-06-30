@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -15,7 +16,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysEnumeration> Get();
         /// <inheritdoc cref="IEnumerationService.Get()"/>
-        Task<IEnumerable<MetasysEnumeration>> GetAsync();
+        Task<IEnumerable<MetasysEnumeration>> GetAsync(CancellationToken ct = default);
 
         // GetValues ---------------------------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -24,7 +25,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="id">The identifier of the enumeration.</param>
         IEnumerable<MetasysEnumValue> GetValues(String id);
         /// <inheritdoc cref="IEnumerationService.GetValues(String)"/>
-        Task<IEnumerable<MetasysEnumValue>> GetValuesAsync(String id);
+        Task<IEnumerable<MetasysEnumValue>> GetValuesAsync(String id, CancellationToken ct = default);
 
         // Delete --------------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -33,7 +34,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="id">The identifier of the enumeration.</param>
         void Delete(string id);
         /// <inheritdoc cref="IEnumerationService.Delete(String)"/>
-        Task DeleteAsync(string id);
+        Task DeleteAsync(string id, CancellationToken ct = default);
 
         // Create --------------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -47,7 +48,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         /// <param name="name">The name of the new custom enumeration.</param>
         /// <param name="values">The list of values (string) included in the new custom enumeration.</param>
-        Task CreateAsync(string name, IEnumerable<String> values);
+        Task CreateAsync(string name, IEnumerable<String> values, CancellationToken ct = default);
 
         // Edit --------------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -63,7 +64,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="id">The identifier of the existing custom enumeration.</param>
         /// <param name="name">The new name of the custom enumeration.</param>
         /// <param name="values">The list of new values (string) for the existing custom enumeration.</param>
-        Task EditAsync(string id, string name, IEnumerable<String> values);
+        Task EditAsync(string id, string name, IEnumerable<String> values, CancellationToken ct = default);
 
         // Replace --------------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -79,7 +80,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="id">The identifier of the existing custom enumeration.</param>
         /// <param name="name">The new name of the custom enumeration.</param>
         /// <param name="values">The list of new values (string) for the existing custom enumeration.</param>
-        Task ReplaceAsync(string id, string name, IEnumerable<String> values);
+        Task ReplaceAsync(string id, string name, IEnumerable<String> values, CancellationToken ct = default);
 
     }
 }

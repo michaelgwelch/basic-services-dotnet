@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -35,14 +36,14 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(alarmFilter).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Alarm>> GetAsync(AlarmFilter alarmFilter)
+        public async Task<PagedResult<Alarm>> GetAsync(AlarmFilter alarmFilter, CancellationToken ct = default)
         {
             CheckVersion(Version);
             // This method is valid only for API v2 or v3.
             if (Version == ApiVersion.v2 || Version == ApiVersion.v3)
             {
                 List<Alarm> alarms = new List<Alarm>();
-                var response = await GetPagedResultsAsync<Alarm>("alarms", ToDictionary(alarmFilter)).ConfigureAwait(false);
+                var response = await GetPagedResultsAsync<Alarm>("alarms", ToDictionary(alarmFilter), ct).ConfigureAwait(false);
                 if (Version > ApiVersion.v2)
                 {
                     foreach (var item in response.Items)
@@ -72,14 +73,14 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync(alarmFilter).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Alarm>> GetAsync(AlarmFilterV4Plus alarmFilter)
+        public async Task<PagedResult<Alarm>> GetAsync(AlarmFilterV4Plus alarmFilter, CancellationToken ct = default)
         {
             CheckVersion(Version);
             // This method is valid only from API v4 on.
             if (Version >= ApiVersion.v4)
             {
                 List<Alarm> alarms = new List<Alarm>();
-                var response = await GetPagedResultsAsync<Alarm>("alarms", ToDictionary(alarmFilter)).ConfigureAwait(false);
+                var response = await GetPagedResultsAsync<Alarm>("alarms", ToDictionary(alarmFilter), ct).ConfigureAwait(false);
                 if (Version > ApiVersion.v2)
                 {
                     foreach (var item in response.Items)
@@ -111,11 +112,11 @@ namespace JohnsonControls.Metasys.BasicServices
             return FindByIdAsync(alarmId).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<Alarm> FindByIdAsync(ActivityId alarmId)
+        public async Task<Alarm> FindByIdAsync(ActivityId alarmId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
-            var response = await GetRequestAsync("alarms", null, alarmId).ConfigureAwait(false);
+            var response = await GetRequestAsync("alarms", null, ct, new object[] { alarmId }).ConfigureAwait(false);
             if (response["items"] != null) response = response["items"];
 
             var alarmData = JsonSerializer.Deserialize<Alarm>(response.ToJsonString());
@@ -132,12 +133,12 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetForObjectAsync(objectId, alarmFilter).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Alarm>> GetForObjectAsync(ObjectId objectId, AlarmFilter alarmFilter)
+        public async Task<PagedResult<Alarm>> GetForObjectAsync(ObjectId objectId, AlarmFilter alarmFilter, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             List<Alarm> alarms = new List<Alarm>();
-            var response = await GetPagedResultsAsync<Alarm>("objects", ToDictionary(alarmFilter), objectId, "alarms").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<Alarm>("objects", ToDictionary(alarmFilter), ct, new object[] { objectId, "alarms" }).ConfigureAwait(false);
             if (Version > ApiVersion.v2)
             {
                 foreach (var item in response.Items)
@@ -162,12 +163,12 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetForNetworkDeviceAsync(networkDeviceId, alarmFilter).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<PagedResult<Alarm>> GetForNetworkDeviceAsync(ObjectId networkDeviceId, AlarmFilter alarmFilter)
+        public async Task<PagedResult<Alarm>> GetForNetworkDeviceAsync(ObjectId networkDeviceId, AlarmFilter alarmFilter, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             List<Alarm> alarms = new List<Alarm>();
-            var response = await GetPagedResultsAsync<Alarm>("networkDevices", ToDictionary(alarmFilter), networkDeviceId, "alarms").ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<Alarm>("networkDevices", ToDictionary(alarmFilter), ct, new object[] { networkDeviceId, "alarms" }).ConfigureAwait(false);
             if (Version > ApiVersion.v2)
             {
                 foreach (var item in response.Items)
@@ -194,7 +195,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        private async Task EditAsync(ActivityId alarmId, ActivityManagementStatusEnum action, string annotationText = null)
+        private async Task EditAsync(ActivityId alarmId, ActivityManagementStatusEnum action, string annotationText = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
@@ -225,7 +226,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task DiscardAsync(ActivityId alarmId, string annotationText = null)
+        public async Task DiscardAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
@@ -256,7 +257,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task AcknowledgeAsync(ActivityId alarmId, string annotationText = null)
+        public async Task AcknowledgeAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
@@ -287,12 +288,12 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<AlarmAnnotation>> GetAnnotationsAsync(ActivityId alarmId)
+        public async Task<IEnumerable<AlarmAnnotation>> GetAnnotationsAsync(ActivityId alarmId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             // Retrieve JSON collection of Annotation
-            var annotations = await GetAllAvailablePagesAsync("alarms", null, alarmId.ToString(), "annotations").ConfigureAwait(false);
+            var annotations = await GetAllAvailablePagesAsync("alarms", null, ct, new string[] { alarmId.ToString(), "annotations" }).ConfigureAwait(false);
             List<AlarmAnnotation> annotationsList = new List<AlarmAnnotation>();
             // Convert to a collection of AlarmAnnotation
             foreach (var token in annotations)

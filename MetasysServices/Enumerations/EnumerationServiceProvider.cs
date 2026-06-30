@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Threading;
 
 
 namespace JohnsonControls.Metasys.BasicServices
@@ -33,7 +34,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetAsync().GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysEnumeration>> GetAsync()
+        public async Task<IEnumerable<MetasysEnumeration>> GetAsync(CancellationToken ct = default)
         {
             CheckVersion(Version);
 
@@ -84,7 +85,7 @@ namespace JohnsonControls.Metasys.BasicServices
             CreateAsync(name, values).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task CreateAsync(string name, IEnumerable<string> values)
+        public async Task CreateAsync(string name, IEnumerable<string> values, CancellationToken ct = default)
         {
             CheckVersion(Version);
             try
@@ -120,7 +121,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return GetEnumValues(id);
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysEnumValue>> GetValuesAsync(string id)
+        public async Task<IEnumerable<MetasysEnumValue>> GetValuesAsync(string id, CancellationToken ct = default)
         {
             return await GetEnumValuesAsync(id);
         }
@@ -132,7 +133,7 @@ namespace JohnsonControls.Metasys.BasicServices
             EditAsync(id, name, values).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task EditAsync(string id, string name, IEnumerable<string> values)
+        public async Task EditAsync(string id, string name, IEnumerable<string> values, CancellationToken ct = default)
         {
             CheckVersion(Version);
             try
@@ -170,7 +171,7 @@ namespace JohnsonControls.Metasys.BasicServices
             ReplaceAsync(id, name, values).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task ReplaceAsync(string id, string name, IEnumerable<string> values)
+        public async Task ReplaceAsync(string id, string name, IEnumerable<string> values, CancellationToken ct = default)
         {
             CheckVersion(Version);
             try
@@ -207,7 +208,7 @@ namespace JohnsonControls.Metasys.BasicServices
             DeleteAsync(id).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task DeleteAsync(string id)
+        public async Task DeleteAsync(string id, CancellationToken ct = default)
         {
             CheckVersion(Version);
             try

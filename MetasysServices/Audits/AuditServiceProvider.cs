@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -30,11 +31,11 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<Audit> FindByIdAsync(ActivityId auditId)
+        public async Task<Audit> FindByIdAsync(ActivityId auditId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
-            var response = await GetRequestAsync("audits", null, auditId).ConfigureAwait(false);
+            var response = await GetRequestAsync("audits", null, ct, new object[] { auditId }).ConfigureAwait(false);
             if (response["item"] != null)
             {
                 response = response["item"];
@@ -49,13 +50,13 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<PagedResult<Audit>> GetAsync(AuditFilter auditFilter)
+        public async Task<PagedResult<Audit>> GetAsync(AuditFilter auditFilter, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             var dictionary = GetParameters(auditFilter);
 
-            var response = await GetPagedResultsAsync<Audit>("audits", dictionary).ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<Audit>("audits", dictionary, ct).ConfigureAwait(false);
             if (Version > ApiVersion.v2)
             {
                 List<Audit> audits = new List<Audit>();
@@ -77,13 +78,13 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<PagedResult<Audit>> GetForObjectAsync(ObjectId objectId, AuditFilter auditFilter)
+        public async Task<PagedResult<Audit>> GetForObjectAsync(ObjectId objectId, AuditFilter auditFilter, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             var dictionary = GetParameters(auditFilter);
 
-            var response = await GetPagedResultsAsync<Audit>("objects", dictionary, objectId, BaseParam).ConfigureAwait(false);
+            var response = await GetPagedResultsAsync<Audit>("objects", dictionary, ct, new object[] { objectId, BaseParam }).ConfigureAwait(false);
             if (Version > ApiVersion.v2)
             {
                 List<Audit> audits = new List<Audit>();
@@ -104,12 +105,12 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<AuditAnnotation>> GetAnnotationsAsync(ActivityId auditId)
+        public async Task<IEnumerable<AuditAnnotation>> GetAnnotationsAsync(ActivityId auditId, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
             // Retrieve JSON collection of Annotation
-            var annotations = await GetAllAvailablePagesAsync("audits", null, auditId.ToString(), "annotations").ConfigureAwait(false);
+            var annotations = await GetAllAvailablePagesAsync("audits", null, ct, new string[] { auditId.ToString(), "annotations"}).ConfigureAwait(false);
             List<AuditAnnotation> annotationsList = new List<AuditAnnotation>();
             // Convert to a collection of AuditAnnotation
             foreach (var token in annotations)
@@ -164,7 +165,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task DiscardAsync(ActivityId id, string annotationText)
+        public async Task DiscardAsync(ActivityId id, string annotationText, CancellationToken ct = default)
         {
             try
             {
@@ -204,7 +205,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task AddAnnotationAsync(ActivityId id, string text)
+        public async Task AddAnnotationAsync(ActivityId id, string text, CancellationToken ct = default)
         {
             try
             {
@@ -235,7 +236,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<Result>> AddAnnotationMultipleAsync(IEnumerable<BatchRequestParam> requests)
+        public async Task<IEnumerable<Result>> AddAnnotationMultipleAsync(IEnumerable<BatchRequestParam> requests, CancellationToken ct = default)
         {
             try
             {
@@ -245,7 +246,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 {
                     if (requests == null) { return null; }
 
-                    var response = await PostBatchRequestAsync("audits", requests, "annotations").ConfigureAwait(false);
+                    var response = await PostBatchRequestAsync("audits", requests, ct, new string[] { "annotations"}).ConfigureAwait(false);
                     return ToResult(response);
                 }
                 else
@@ -267,7 +268,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<Result>> DiscardMultipleAsync(IEnumerable<BatchRequestParam> requests)
+        public async Task<IEnumerable<Result>> DiscardMultipleAsync(IEnumerable<BatchRequestParam> requests, CancellationToken ct = default)
         {
             try
             {
@@ -277,7 +278,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 {
                     if (requests == null) { return null; }
 
-                    var response = await PutBatchRequestAsync("audits", requests, "discard").ConfigureAwait(false);
+                    var response = await PutBatchRequestAsync("audits", requests, ct, new string[] { "discard"}).ConfigureAwait(false);
                     return ToResult(response);
                 }
                 else

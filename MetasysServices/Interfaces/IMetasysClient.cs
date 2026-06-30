@@ -129,7 +129,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysTokenException"></exception>
         AccessToken TryLogin(string username, string password, bool refresh = true);
         /// <inheritdoc cref="IMetasysClient.TryLogin(string, string, bool)"/>
-        Task<AccessToken> TryLoginAsync(string username, string password, bool refresh = true);
+        Task<AccessToken> TryLoginAsync(string username, string password, bool refresh = true, CancellationToken ct = default);
 
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysTokenException"></exception>
         AccessToken Refresh();
         /// <inheritdoc cref="IMetasysClient.Refresh()"/>
-        Task<AccessToken> RefreshAsync();
+        Task<AccessToken> RefreshAsync(CancellationToken ct = default);
 
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpException"></exception>
         ObjectId GetObjectIdentifier(string itemReference);
         /// <inheritdoc cref="IMetasysClient.GetObjectIdentifier(string)"/>
-        Task<ObjectId> GetObjectIdentifierAsync(string itemReference);
+        Task<ObjectId> GetObjectIdentifierAsync(string itemReference, CancellationToken ct = default);
 
         /// <summary>
         /// Read one attribute value given the id of the object.
@@ -184,7 +184,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysPropertyException"></exception>
         Variant ReadProperty(ObjectId id, string attributeName);
         /// <inheritdoc cref="IMetasysClient.ReadProperty(ObjectId, string)"/>
-        Task<Variant> ReadPropertyAsync(ObjectId id, string attributeName);
+        Task<Variant> ReadPropertyAsync(ObjectId id, string attributeName, CancellationToken ct = default);
 
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysPropertyException"></exception>
         IEnumerable<VariantMultiple> ReadPropertyMultiple(IEnumerable<ObjectId> ids, IEnumerable<string> attributeNames);
         /// <inheritdoc cref="IMetasysClient.ReadPropertyMultiple(IEnumerable{ObjectId}, IEnumerable{string})"/>
-        Task<IEnumerable<VariantMultiple>> ReadPropertyMultipleAsync(IEnumerable<ObjectId> ids, IEnumerable<string> attributeNames);
+        Task<IEnumerable<VariantMultiple>> ReadPropertyMultipleAsync(IEnumerable<ObjectId> ids, IEnumerable<string> attributeNames, CancellationToken ct = default);
 
         /// <summary>
         /// Write a single attribute given the id of the object.
@@ -210,7 +210,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpException"></exception>
         void WriteProperty(ObjectId id, string attributeName, object newValue);
         /// <inheritdoc cref="IMetasysClient.WriteProperty(ObjectId, string, object)"/>
-        Task WritePropertyAsync(ObjectId id, string attributeName, object newValue);
+        Task WritePropertyAsync(ObjectId id, string attributeName, object newValue, CancellationToken ct = default);
 
 
         /// <summary>
@@ -232,9 +232,9 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Write asynchronously to many attribute values given the ids of the objects.
         /// </summary>
-        Task WritePropertyMultipleAsync(IEnumerable<ObjectId> ids, IEnumerable<(string Attribute, object Value)> attributeValues);
+        Task WritePropertyMultipleAsync(IEnumerable<ObjectId> ids, IEnumerable<(string Attribute, object Value)> attributeValues, CancellationToken ct = default);
         /// <inheritdoc cref="IMetasysClient.WritePropertyMultiple(IEnumerable{ObjectId}, Dictionary{string, object})"/>
-        Task WritePropertyMultipleAsync(IEnumerable<ObjectId> ids, Dictionary<string, object> attributeValues);
+        Task WritePropertyMultipleAsync(IEnumerable<ObjectId> ids, Dictionary<string, object> attributeValues, CancellationToken ct = default);
 
 
 
@@ -245,7 +245,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns>List of Commands.</returns>
         IEnumerable<Command> GetCommands(ObjectId id);
         /// <inheritdoc cref="IMetasysClient.GetCommands(ObjectId)"/>
-        Task<IEnumerable<Command>> GetCommandsAsync(ObjectId id);
+        Task<IEnumerable<Command>> GetCommandsAsync(ObjectId id, CancellationToken ct = default);
 
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpException"></exception>
         void SendCommand(ObjectId id, string command, IEnumerable<object> values = null);
         /// <inheritdoc cref="IMetasysClient.SendCommand(ObjectId, string, IEnumerable{object})"/>
-        Task SendCommandAsync(ObjectId id, string command, IEnumerable<object> values = null);
+        Task SendCommandAsync(ObjectId id, string command, IEnumerable<object> values = null, CancellationToken ct = default);
 
         /// <summary>
         /// <s>Gets all network devices.</s>
@@ -274,7 +274,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<MetasysObject> GetNetworkDevices(string type = null);
         /// <inheritdoc cref="IMetasysClient.GetNetworkDevices(string)"/>
         [Obsolete("Use GetNetworkDevicesAsync(NetworkDeviceTypeEnum) instead.")]
-        Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(string type = null);
+        Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(string type = null, CancellationToken ct = default);
 
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpParsingException"></exception>
         IEnumerable<MetasysObject> GetNetworkDevices(NetworkDeviceTypeEnum networkDevicetype);
         /// <inheritdoc cref="IMetasysClient.GetNetworkDevices(NetworkDeviceTypeEnum)"/>
-        Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(NetworkDeviceTypeEnum networkDevicetype);
+        Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(NetworkDeviceTypeEnum networkDevicetype, CancellationToken ct = default);
 
 
         /// <summary>
@@ -295,7 +295,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpParsingException"></exception>
         IEnumerable<MetasysObjectType> GetNetworkDeviceTypes();
         /// <inheritdoc cref="IMetasysClient.GetNetworkDeviceTypes()"/>
-        Task<IEnumerable<MetasysObjectType>> GetNetworkDeviceTypesAsync();
+        Task<IEnumerable<MetasysObjectType>> GetNetworkDeviceTypesAsync(CancellationToken ct = default);
 
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpParsingException"></exception>
         IEnumerable<MetasysObject> GetObjects(ObjectId id, int levels = 1, bool includeInternalObjects = false, bool includeExtensions = false);
         /// <inheritdoc cref="IMetasysClient.GetObjects(ObjectId, int, bool, bool)"/>
-        Task<IEnumerable<MetasysObject>> GetObjectsAsync(ObjectId id, int levels = 1, bool includeInternalObjects = false, bool includeExtensions = false);
+        Task<IEnumerable<MetasysObject>> GetObjectsAsync(ObjectId id, int levels = 1, bool includeInternalObjects = false, bool includeExtensions = false, CancellationToken ct = default);
 
         /// <summary>
         /// Gets all child objects given a parent id and object type.
@@ -326,7 +326,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<MetasysObject> GetObjects(ObjectId objectId, string objectType);
 
         /// <inheritdoc cref="IMetasysClient.GetObjects(ObjectId, string)"/>
-        Task<IEnumerable<MetasysObject>> GetObjectsAsync(ObjectId objectId, string objectType);
+        Task<IEnumerable<MetasysObject>> GetObjectsAsync(ObjectId objectId, string objectType, CancellationToken ct = default);
 
         #region "SPACES" //==============================================================================================================
         // GetSpaces ---------------------------------------------------------------------------------------------------------------------
@@ -345,7 +345,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<MetasysObject> GetSpaces(SpaceTypeEnum? type = null);
         /// <inheritdoc cref="IMetasysClient.GetSpaces(SpaceTypeEnum?)"/>
         [Obsolete("SpaceServiceProvider.GetAsync(SpaceTypeEnum?, int?, int?, string) instead.")]
-        Task<IEnumerable<MetasysObject>> GetSpacesAsync(SpaceTypeEnum? type = null);
+        Task<IEnumerable<MetasysObject>> GetSpacesAsync(SpaceTypeEnum? type = null, CancellationToken ct = default);
 
         // GetSpaceChildren --------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -361,7 +361,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<MetasysObject> GetSpaceChildren(Guid spaceId);
         /// <inheritdoc cref="IMetasysClient.GetSpaceChildren(Guid)"/>
         [Obsolete("Use SpaceServiceProvider.GetChildrenAsync(ObjectId) instead.")]
-        Task<IEnumerable<MetasysObject>> GetSpaceChildrenAsync(Guid spaceId);
+        Task<IEnumerable<MetasysObject>> GetSpaceChildrenAsync(Guid spaceId, CancellationToken ct = default);
 
 
         // GetSpaceTypes -----------------------------------------------------------------------------------------------------------------
@@ -375,7 +375,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObjectType> GetSpaceTypes();
         /// <inheritdoc cref="IMetasysClient.GetSpaceTypes()"/>
-        Task<IEnumerable<MetasysObjectType>> GetSpaceTypesAsync();
+        Task<IEnumerable<MetasysObjectType>> GetSpaceTypesAsync(CancellationToken ct = default);
         #endregion //=====================================================================================================================
 
         #region "EQUIPMENTS" //==========================================================================================================
@@ -392,7 +392,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<MetasysObject> GetEquipment();
         /// <inheritdoc cref="IMetasysClient.GetEquipment()"/>
         [Obsolete("Use EquipmentServiceProvider.GetAsync(int?, int?) instead.")]
-        Task<IEnumerable<MetasysObject>> GetEquipmentAsync();
+        Task<IEnumerable<MetasysObject>> GetEquipmentAsync(CancellationToken ct = default);
 
         // GetEquipmentPoints -----------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -411,7 +411,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<MetasysPoint> GetEquipmentPoints(Guid equipmentId, bool readAttributeValue = true);
         /// <inheritdoc cref="IMetasysClient.GetEquipmentPoints(Guid, bool)"/>
         [Obsolete("Use EquipmentServiceProvider.GetPointsAsync(ObjectId, bool) instead.")]
-        Task<IEnumerable<MetasysPoint>> GetEquipmentPointsAsync(Guid equipmentId, bool readAttributeValue = true);
+        Task<IEnumerable<MetasysPoint>> GetEquipmentPointsAsync(Guid equipmentId, bool readAttributeValue = true, CancellationToken ct = default);
 
         // GetSpaceEquipment ------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -427,7 +427,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<MetasysObject> GetSpaceEquipment(Guid spaceId);
         /// <inheritdoc cref="IMetasysClient.GetSpaceEquipment(Guid)"/>
         [Obsolete("Use EquipmentServiceProvider.GetServingASpaceAsync(ObjectId) instead.")]
-        Task<IEnumerable<MetasysObject>> GetSpaceEquipmentAsync(Guid spaceId);
+        Task<IEnumerable<MetasysObject>> GetSpaceEquipmentAsync(Guid spaceId, CancellationToken ct = default);
         #endregion
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace JohnsonControls.Metasys.BasicServices
         AccessToken TryLogin(string credManTarget, bool refresh = true);
 
         /// <inheritdoc cref="IMetasysClient.TryLogin(string, bool)"/>
-        Task<AccessToken> TryLoginAsync(string credManTarget, bool refresh = true);
+        Task<AccessToken> TryLoginAsync(string credManTarget, bool refresh = true, CancellationToken ct = default);
 
         /// <summary>
         /// Returns the current server time in UTC format.
@@ -449,7 +449,7 @@ namespace JohnsonControls.Metasys.BasicServices
         DateTime GetServerTime();
 
         /// <inheritdoc cref="IMetasysClient.GetServerTime()"/>
-        Task<DateTime> GetServerTimeAsync();
+        Task<DateTime> GetServerTimeAsync(CancellationToken ct = default);
 
         /// <summary>
         /// Send an HTTP request as an asynchronous operation.
@@ -484,7 +484,7 @@ namespace JohnsonControls.Metasys.BasicServices
         IEnumerable<VariantMultiple> ReadPropertyMultiple(IEnumerable<Guid> ids, IEnumerable<string> attributeNames);
         /// <inheritdoc cref="IMetasysClient.ReadPropertyMultiple(IEnumerable{Guid}, IEnumerable{string})"/>
         [Obsolete("Use ReadPropertyMultipleAsync(IEnumerable<ObjectId>, IEnumerable<string>) instead.")]
-        Task<IEnumerable<VariantMultiple>> ReadPropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<string> attributeNames);
+        Task<IEnumerable<VariantMultiple>> ReadPropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<string> attributeNames, CancellationToken ct = default);
 
 
         /// <summary>
@@ -519,7 +519,7 @@ namespace JohnsonControls.Metasys.BasicServices
         Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<(string Attribute, object Value)> attributeValues);
         /// <inheritdoc cref="IMetasysClient.WritePropertyMultiple(IEnumerable{Guid}, Dictionary{string, object})"/>
         [Obsolete("Use WritePropertyMultiple(IEnumerable<ObjectId>, Dictionary<string, object>) instead.")]
-        Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, Dictionary<string, object> attributeValues);
+        Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, Dictionary<string, object> attributeValues, CancellationToken ct = default);
 
         #endregion
 

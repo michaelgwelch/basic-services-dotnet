@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace JohnsonControls.Metasys.BasicServices
 {
@@ -16,7 +17,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <returns>The specified alarm details.</returns>
         MetasysObject FindById(ObjectId spaceId);
         /// <inheritdoc cref="ISpaceService.FindById(ObjectId)"/>
-        Task<MetasysObject> FindByIdAsync(ObjectId spaceId);
+        Task<MetasysObject> FindByIdAsync(ObjectId spaceId, CancellationToken ct = default);
 
 
         // Get ---------------------------------------------------------------------------------------------------------------------
@@ -31,7 +32,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpParsingException"></exception>
         IEnumerable<MetasysObject> Get(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null);
         /// <inheritdoc cref="ISpaceService.Get(SpaceTypeEnum?, int?, int?, string)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null);
+        Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default);
 
 
         // Get ---------------------------------------------------------------------------------------------------------------------
@@ -44,7 +45,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="sort">Optional, the criteria to use when sorting results (default = name).</param>
         IEnumerable<MetasysObject> Get(string type, int? page = null, int? pageSize = null, string sort = null);
         /// <inheritdoc cref="ISpaceService.Get(string, int?, int?, string)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string sort = null);
+        Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default);
 
         // GetSpaceChildren ---------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -53,7 +54,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="spaceId">The id of the parent space.</param>
         IEnumerable<MetasysObject> GetChildren(ObjectId spaceId);
         /// <inheritdoc cref="ISpaceService.GetChildren(ObjectId)"/>
-        Task<IEnumerable<MetasysObject>> GetChildrenAsync(ObjectId spaceId);
+        Task<IEnumerable<MetasysObject>> GetChildrenAsync(ObjectId spaceId, CancellationToken ct = default);
 
         // GetSpaceTypes -----------------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -61,7 +62,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObjectType> GetTypes();
         /// <inheritdoc cref="ISpaceService.GetTypes()"/>
-        Task<IEnumerable<MetasysObjectType>> GetTypesAsync();
+        Task<IEnumerable<MetasysObjectType>> GetTypesAsync(CancellationToken ct = default);
 
         // GetServedByNetworkDevice -------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -69,7 +70,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObject> GetServedByNetworkDevice(ObjectId networkDeviceId);
         /// <inheritdoc cref="ISpaceService.GetServedByNetworkDevice(ObjectId)"/>
-        Task<IEnumerable<MetasysObject>> GetServedByNetworkDeviceAsync(ObjectId networkDeviceId);
+        Task<IEnumerable<MetasysObject>> GetServedByNetworkDeviceAsync(ObjectId networkDeviceId, CancellationToken ct = default);
 
         // GetServedByEquipment ----------------------------------------------------------------------------------------------------------
         /// <summary>
@@ -77,7 +78,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         IEnumerable<MetasysObject> GetServedByEquipment(ObjectId equipmentId);
         /// <inheritdoc cref="ISpaceService.GetServedByEquipment(ObjectId)"/>
-        Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId);
+        Task<IEnumerable<MetasysObject>> GetServedByEquipmentAsync(ObjectId equipmentId, CancellationToken ct = default);
 
     }
 }
