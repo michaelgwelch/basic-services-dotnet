@@ -25,7 +25,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Subscribe method
         /// </summary>
-        Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string> query = null, dynamic body = null, CancellationToken ct = default);
+        Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string>? query = null, dynamic? body = null, CancellationToken ct = default);
 
         /// <summary>
         /// Unsubscribe method

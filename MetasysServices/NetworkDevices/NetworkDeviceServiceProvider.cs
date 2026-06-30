@@ -20,7 +20,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="client">The FlurlClient to get response from URL.</param>
         /// <param name="version">The server's Api version.</param>
         /// <param name="logger">Optional logger; pass null to suppress logging.</param>
-        public NetworkDeviceServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
+        public NetworkDeviceServiceProvider(IFlurlClient client, ApiVersion version, ILogger? logger = null) : base(client, version, logger)
         {
         }
 
@@ -40,7 +40,7 @@ namespace JohnsonControls.Metasys.BasicServices
 
         // Get ------------------------------------------------------------------------------------------------------------------------------------------------
         /// <inheritdoc/>
-        public IEnumerable<MetasysObject> Get(string type = null)
+        public IEnumerable<MetasysObject> Get(string? type = null)
         {
             return GetAsync(type).GetAwaiter().GetResult();
         }
@@ -50,7 +50,7 @@ namespace JohnsonControls.Metasys.BasicServices
             return await GetByClassificationAsync(classificationEnum.ToString());
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(string type = null, CancellationToken ct = default)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(string? type = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             // Note: the name of the parameter 'Type' changes according to the API version
@@ -60,7 +60,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetByClassificationAsync(string classification = null, CancellationToken ct = default)
+        public async Task<IEnumerable<MetasysObject>> GetByClassificationAsync(string? classification = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             var response = await this.GetAllAvailablePagesAsync("networkDevices", new Dictionary<string, string> { { "classification", classification } }).ConfigureAwait(false);

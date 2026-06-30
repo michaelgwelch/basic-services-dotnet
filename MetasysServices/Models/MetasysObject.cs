@@ -98,7 +98,7 @@ namespace JohnsonControls.Metasys.BasicServices
             Children = children?.Select(child => new MetasysObject(child, version)).ToList() ?? [];
         }
 
-        internal MetasysObject(JsonNode token, ApiVersion version, IEnumerable<MetasysObject> children = null, MetasysObjectTypeEnum? type = null)
+        internal MetasysObject(JsonNode token, ApiVersion version, IEnumerable<MetasysObject>? children = null, MetasysObjectTypeEnum? type = null)
         {
             Children = children ?? new List<MetasysObject>(); // Return empty list by convention for null
             Type = type;
@@ -235,7 +235,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Returns a value indicating whither this instance has values equal to a specified object.
         /// </summary>
         /// <param name="obj"></param>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj != null && obj is MetasysObject @object)
             {

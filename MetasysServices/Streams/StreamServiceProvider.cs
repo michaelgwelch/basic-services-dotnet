@@ -76,7 +76,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Stream Service Provider
         /// </summary>
-        public StreamServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
+        public StreamServiceProvider(IFlurlClient client, ApiVersion version, ILogger? logger = null) : base(client, version, logger)
         {
             _client = client;
             _serverUrl = client.BaseUrl;
@@ -230,7 +230,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public async Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string> query = null, dynamic body = null, CancellationToken ct = default)
+        public async Task<string> SubscribeAsync(Guid requestId, string method, string relativeUrl, Dictionary<string, string>? query = null, dynamic? body = null, CancellationToken ct = default)
         {
             string bodyContent = body != null ? JsonSerializer.Serialize(body) : null;
             string subscriptionInfoId = "";

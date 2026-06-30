@@ -89,7 +89,7 @@ namespace JohnsonControls.Metasys.BasicServices
         ///// Localized string if the resource was found, the default en-US localized string if not found,
         ///// or the resource parameter value if neither resource is found.
         ///// </returns>
-        //string Localize(string resource, CultureInfo cultureInfo = null);
+        //string Localize(string resource, CultureInfo? cultureInfo = null);
 
         /// <summary>
         /// Attempts to get the enumeration key of a given en-US localized command.
@@ -255,9 +255,9 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="command"></param>
         /// <param name="values"></param>
         /// <exception cref="MetasysHttpException"></exception>
-        void SendCommand(ObjectId id, string command, IEnumerable<object> values = null);
+        void SendCommand(ObjectId id, string command, IEnumerable<object>? values = null);
         /// <inheritdoc cref="IMetasysClient.SendCommand(ObjectId, string, IEnumerable{object})"/>
-        Task SendCommandAsync(ObjectId id, string command, IEnumerable<object> values = null, CancellationToken ct = default);
+        Task SendCommandAsync(ObjectId id, string command, IEnumerable<object>? values = null, CancellationToken ct = default);
 
         /// <summary>
         /// <s>Gets all network devices.</s>
@@ -271,10 +271,10 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpParsingException"></exception>
         [Obsolete("Use GetNetworkDevices(NetworkDeviceTypeEnum) instead.")]
-        IEnumerable<MetasysObject> GetNetworkDevices(string type = null);
+        IEnumerable<MetasysObject> GetNetworkDevices(string? type = null);
         /// <inheritdoc cref="IMetasysClient.GetNetworkDevices(string)"/>
         [Obsolete("Use GetNetworkDevicesAsync(NetworkDeviceTypeEnum) instead.")]
-        Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(string type = null, CancellationToken ct = default);
+        Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(string? type = null, CancellationToken ct = default);
 
 
         /// <summary>

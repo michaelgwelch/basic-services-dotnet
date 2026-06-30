@@ -29,9 +29,9 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="type">Optional type number as a string</param>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpParsingException"></exception>
-        IEnumerable<MetasysObject> Get(string type = null);
+        IEnumerable<MetasysObject> Get(string? type = null);
         /// <inheritdoc cref="INetworkDeviceService.Get(string)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(string type = null, CancellationToken ct = default);
+        Task<IEnumerable<MetasysObject>> GetAsync(string? type = null, CancellationToken ct = default);
 
         /// <summary>
         /// Retrieves a collection of network devices.

@@ -78,7 +78,7 @@ namespace JohnsonControls.Metasys.BasicServices
             /// <value>The maximum value of the number or 1 if not a number.</value>
             public double? Maximum;
 
-            internal Item(string title, string type, double? minimum = 1, double? maximum = 1, IEnumerable<EnumerationItem> enums = null)
+            internal Item(string title, string type, double? minimum = 1, double? maximum = 1, IEnumerable<EnumerationItem>? enums = null)
             {
                 Title = title;
                 Type = type;
@@ -91,7 +91,7 @@ namespace JohnsonControls.Metasys.BasicServices
             /// Returns a value indicating whither this instance has values equal to a specified object.
             /// </summary>
             /// <param name="obj"></param>
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 if (obj != null && obj is Item)
                 {
@@ -174,7 +174,7 @@ namespace JohnsonControls.Metasys.BasicServices
             /// Returns a value indicating whither this instance has values equal to a specified object.
             /// </summary>
             /// <param name="obj"></param>
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 if (obj != null && obj is EnumerationItem)
                 {
@@ -358,7 +358,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Returns a value indicating whither this instance has values equal to a specified object.
         /// </summary>
         /// <param name="obj"></param>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj != null && obj is Command)
             {

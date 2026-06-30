@@ -66,7 +66,7 @@ namespace JohnsonControls.Metasys.BasicServices
                 Uri selfUri = new Uri((string)response["self"]);
                 string page = HttpUtility.ParseQueryString(selfUri.Query).Get("page");
                 string pageSize = HttpUtility.ParseQueryString(selfUri.Query).Get("pageSize");
-                string nextUrl = null;
+                string? nextUrl = null;
                 if (response["next"] != null)
                 {
                     nextUrl = (string)response["next"];

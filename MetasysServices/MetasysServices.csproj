@@ -4,6 +4,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>JohnsonControls.Metasys.BasicServices</RootNamespace>
     <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <!-- Suppress pre-existing nullable warnings in legacy code; fix incrementally -->
+    <NoWarn>CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8620;CS8622;CS8625;CS8629</NoWarn>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>© 2020-2024 Johnson Controls</Copyright>
     <Company>Johnson Controls Int.</Company>

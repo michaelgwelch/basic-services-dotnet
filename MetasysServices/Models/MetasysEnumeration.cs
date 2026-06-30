@@ -45,7 +45,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <summary>
         /// Returns a value indicating whither this instance has values equal to a specified object.
         /// </summary>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj != null && obj is MetasysEnumeration enumeration)
             {

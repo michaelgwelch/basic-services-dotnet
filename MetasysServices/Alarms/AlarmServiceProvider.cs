@@ -25,7 +25,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="client">The FlurlClient to get response from URL.</param>
         /// <param name="version">The server's Api version.</param>
         /// <param name="logger">Optional logger; pass null to suppress logging.</param>
-        public AlarmServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
+        public AlarmServiceProvider(IFlurlClient client, ApiVersion version, ILogger? logger = null) : base(client, version, logger)
         {
         }
 
@@ -189,13 +189,13 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        private void Edit(ActivityId alarmId, ActivityManagementStatusEnum action, string annotationText = null)
+        private void Edit(ActivityId alarmId, ActivityManagementStatusEnum action, string? annotationText = null)
         {
             EditAsync(alarmId, action, annotationText).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc/>
-        private async Task EditAsync(ActivityId alarmId, ActivityManagementStatusEnum action, string annotationText = null, CancellationToken ct = default)
+        private async Task EditAsync(ActivityId alarmId, ActivityManagementStatusEnum action, string? annotationText = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
@@ -220,13 +220,13 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public void Discard(ActivityId alarmId, string annotationText = null)
+        public void Discard(ActivityId alarmId, string? annotationText = null)
         {
             DiscardAsync(alarmId, annotationText).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc/>
-        public async Task DiscardAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default)
+        public async Task DiscardAsync(ActivityId alarmId, string? annotationText = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
 
@@ -251,13 +251,13 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public void Acknowledge(ActivityId alarmId, string annotationText = null)
+        public void Acknowledge(ActivityId alarmId, string? annotationText = null)
         {
             AcknowledgeAsync(alarmId, annotationText).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc/>
-        public async Task AcknowledgeAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default)
+        public async Task AcknowledgeAsync(ActivityId alarmId, string? annotationText = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
 

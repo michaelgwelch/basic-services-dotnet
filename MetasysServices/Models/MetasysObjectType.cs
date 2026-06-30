@@ -28,7 +28,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// </summary>
         public int Id { private set; get; }
 
-        internal MetasysObjectType(int id, string key, string description, CultureInfo cultureInfo = null)
+        internal MetasysObjectType(int id, string key, string description, CultureInfo? cultureInfo = null)
         {
             _CultureInfo = cultureInfo;
             DescriptionEnumerationKey = key;
@@ -40,7 +40,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Returns a value indicating whither this instance has values equal to a specified object.
         /// </summary>
         /// <param name="obj"></param>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj != null && obj is MetasysObjectType)
             {

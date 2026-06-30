@@ -102,7 +102,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc cref="IEquatable{T}"/>
-        public bool Equals(string other)
+        public bool Equals(string? other)
         {
             return Value == other;
         }

@@ -57,7 +57,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="client">The Flurl client.</param>
         /// <param name="version">The server's Api version.</param>
         /// <param name="logger">Optional logger; pass null to suppress logging.</param>
-        public BasicServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null)
+        public BasicServiceProvider(IFlurlClient client, ApiVersion version, ILogger? logger = null)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client), "FlurlClient can not be null.");
             Version = version;
@@ -150,7 +150,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// If <paramref name="id"/> is specified then this method returns the children of the specified object (and any of their children if level > 1).
         /// If <c>id</c> is <c>null</c> then this method returns the root object (and it's children; unless level is 0).
         /// </returns>
-        protected async Task<List<MetasysObject>> GetObjectsAsync(ObjectId? id, Dictionary<string, string> parameters = null, CancellationToken ct = default)
+        protected async Task<List<MetasysObject>> GetObjectsAsync(ObjectId? id, Dictionary<string, string>? parameters = null, CancellationToken ct = default)
         {
             if (Version <= ApiVersion.v3)
             {
@@ -186,7 +186,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="levels">The number of levels to retrieve children.</param>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpParsingException"></exception>
-        protected async Task<List<TreeObject>> GetObjectChildrenAsync(ObjectId id, Dictionary<string, string> parameters = null, int levels = 1, CancellationToken ct = default)
+        protected async Task<List<TreeObject>> GetObjectChildrenAsync(ObjectId id, Dictionary<string, string>? parameters = null, int levels = 1, CancellationToken ct = default)
         {
             if (Version > ApiVersion.v3)
             {
@@ -358,7 +358,7 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public string Localize(string resource, CultureInfo cultureInfo = null)
+        public string Localize(string resource, CultureInfo? cultureInfo = null)
         {
             // Priority is the cultureInfo parameter if available, otherwise MetasysClient culture.
             return Utils.ResourceManager.Localize(resource, cultureInfo ?? Culture);
@@ -485,7 +485,7 @@ namespace JohnsonControls.Metasys.BasicServices
         protected ObjectId ParseObjectIdentifier(JsonNode token)
         {
             if (token == null) throw new MetasysGuidException("null", new ArgumentNullException());
-            string str = null;
+            string? str = null;
             try
             {
                 if (token is System.Text.Json.Nodes.JsonValue)
@@ -517,7 +517,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpTimeoutException"></exception>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpNotFoundException"></exception>
-        protected async Task<JsonNode> GetRequestAsync(string resource, Dictionary<string, string> parameters = null, CancellationToken ct = default, params object[] pathSegments)
+        protected async Task<JsonNode> GetRequestAsync(string resource, Dictionary<string, string>? parameters = null, CancellationToken ct = default, params object[] pathSegments)
         {
 
             JsonNode response = null;
@@ -558,7 +558,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="parameters">Query string parameters in Key/Value format.</param>
         /// <param name="pathSegments">Path segments to be used in combination with the main resource.</param>
         /// <returns></returns>
-        protected async Task<PagedResult<T>> GetPagedResultsAsync<T>(string resource, Dictionary<string, string> parameters, CancellationToken ct = default, object[] pathSegments = null)
+        protected async Task<PagedResult<T>> GetPagedResultsAsync<T>(string resource, Dictionary<string, string> parameters, CancellationToken ct = default, object[]? pathSegments = null)
         {
             var response = await GetRequestAsync(resource, parameters, ct, pathSegments).ConfigureAwait(false);
             return new PagedResult<T>(response);
@@ -576,7 +576,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <exception cref="MetasysHttpTimeoutException"></exception>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpNotFoundException"></exception>
-        protected async Task<List<JsonNode>> GetAllAvailablePagesAsync(string resource, Dictionary<string, string> parameters = null, CancellationToken ct = default, string[] pathSegments = null)
+        protected async Task<List<JsonNode>> GetAllAvailablePagesAsync(string resource, Dictionary<string, string>? parameters = null, CancellationToken ct = default, string[]? pathSegments = null)
         {
             bool hasNext = true;
             bool buildAggregateResponse = true;
@@ -696,7 +696,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="resources"></param>
         /// <param name="paths"></param>
         /// <returns></returns>
-        protected async Task<JsonNode> GetBatchRequestAsync(string endpoint, IEnumerable<ObjectId> ids, IEnumerable<string> resources, CancellationToken ct = default, string[] paths = null)
+        protected async Task<JsonNode> GetBatchRequestAsync(string endpoint, IEnumerable<ObjectId> ids, IEnumerable<string> resources, CancellationToken ct = default, string[]? paths = null)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -738,7 +738,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="requests"></param>
         /// <param name="paths"></param>
         /// <returns></returns>
-        protected async Task<JsonNode> PostBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, CancellationToken ct = default, string[] paths = null)
+        protected async Task<JsonNode> PostBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, CancellationToken ct = default, string[]? paths = null)
         {
             // Create URL with base resource
             Url url = new Url(endpoint);
@@ -799,7 +799,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="paths"></param>
         /// <returns></returns>
 
-        protected async Task<JsonNode> PutBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, CancellationToken ct = default, string[] paths = null)
+        protected async Task<JsonNode> PutBatchRequestAsync(string endpoint, IEnumerable<BatchRequestParam> requests, CancellationToken ct = default, string[]? paths = null)
         {
             Boolean isDiscard = false;
             // Create URL with base resource

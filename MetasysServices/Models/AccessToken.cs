@@ -45,7 +45,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Returns a value indicating whither this instance has values equal to a specified object.
         /// </summary>
         /// <param name="obj"></param>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj != null && obj is AccessToken token)
             {

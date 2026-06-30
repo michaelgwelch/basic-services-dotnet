@@ -16,27 +16,27 @@ namespace JohnsonControls.Metasys.BasicServices
         ///// <param name="alarmId">The identifier of the alarm.</param>
         ///// <param name="action">Action: Acknowledged or Discarded.</param>
         ///// <param name="annotationText">Annotation Text (optional).</param>
-        //void Edit(ActivityId alarmId, ActivityManagementStatusEnum action, string annotationText = null);
+        //void Edit(ActivityId alarmId, ActivityManagementStatusEnum action, string? annotationText = null);
         ///// <inheritdoc cref="IAlarmsService.Edit(ActivityId, ActivityManagementStatusEnum, String)"/>
-        //Task EditAsync(ActivityId alarmId, ActivityManagementStatusEnum action, string annotationText = null);
+        //Task EditAsync(ActivityId alarmId, ActivityManagementStatusEnum action, string? annotationText = null);
 
         /// <summary>
         /// Set an Alarm as 'acknowledged'
         /// </summary>
         /// <param name="alarmId">The identifier of the alarm.</param>
         /// <param name="annotationText">Annotation Text (optional).</param>
-        void Acknowledge(ActivityId alarmId, string annotationText = null);
+        void Acknowledge(ActivityId alarmId, string? annotationText = null);
         /// <inheritdoc cref="IAlarmsService.Acknowledge(ActivityId, String)"/>
-        Task AcknowledgeAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default);
+        Task AcknowledgeAsync(ActivityId alarmId, string? annotationText = null, CancellationToken ct = default);
 
         /// <summary>
         /// Set an Alarm as 'discarded'
         /// </summary>
         /// <param name="alarmId">The identifier of the alarm.</param>
         /// <param name="annotationText">Annotation Text (optional).</param>
-        void Discard(ActivityId alarmId, string annotationText = null);
+        void Discard(ActivityId alarmId, string? annotationText = null);
         /// <inheritdoc cref="IAlarmsService.Discard(ActivityId, String)"/>
-        Task DiscardAsync(ActivityId alarmId, string annotationText = null, CancellationToken ct = default);
+        Task DiscardAsync(ActivityId alarmId, string? annotationText = null, CancellationToken ct = default);
 
         // --------------------------------------------------------------------------------------------------
         /// <summary>

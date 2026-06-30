@@ -17,7 +17,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="client">The FlurlClient to get response from URL.</param>
         /// <param name="version">The server's Api version.</param>
         /// <param name="logger">Optional logger; pass null to suppress logging.</param>
-        public SpaceServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
+        public SpaceServiceProvider(IFlurlClient client, ApiVersion version, ILogger? logger = null) : base(client, version, logger)
         {
         }
 
@@ -39,12 +39,12 @@ namespace JohnsonControls.Metasys.BasicServices
 
         // Get ---------------------------------------------------------------------------------------------------------------------
         /// <inheritdoc/>
-        public IEnumerable<MetasysObject> Get(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null)
+        public IEnumerable<MetasysObject> Get(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string? sort = null)
         {
             return GetAsync(type, page, pageSize, sort).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string? sort = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             Dictionary<string, string> parameters = new Dictionary<string, string>();
@@ -60,12 +60,12 @@ namespace JohnsonControls.Metasys.BasicServices
         }
 
         /// <inheritdoc/>
-        public IEnumerable<MetasysObject> Get(string type, int? page = null, int? pageSize = null, string sort = null)
+        public IEnumerable<MetasysObject> Get(string type, int? page = null, int? pageSize = null, string? sort = null)
         {
             return GetAsync(type, page, pageSize, sort).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default)
+        public async Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string? sort = null, CancellationToken ct = default)
         {
             CheckVersion(Version);
             Dictionary<string, string> parameters = new Dictionary<string, string>();

@@ -30,9 +30,9 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="sort">Optional, the criteria to use when sorting results (default = name).</param>
         /// <exception cref="MetasysHttpException"></exception>
         /// <exception cref="MetasysHttpParsingException"></exception>
-        IEnumerable<MetasysObject> Get(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null);
+        IEnumerable<MetasysObject> Get(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string? sort = null);
         /// <inheritdoc cref="ISpaceService.Get(SpaceTypeEnum?, int?, int?, string)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default);
+        Task<IEnumerable<MetasysObject>> GetAsync(SpaceTypeEnum? type = null, int? page = null, int? pageSize = null, string? sort = null, CancellationToken ct = default);
 
 
         // Get ---------------------------------------------------------------------------------------------------------------------
@@ -43,9 +43,9 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="page">Optional, the page numer of items to return (default = 1).</param>
         /// <param name="pageSize">Optional, the maximum number of items to return in the response (default = 100, max = 1000).</param>
         /// <param name="sort">Optional, the criteria to use when sorting results (default = name).</param>
-        IEnumerable<MetasysObject> Get(string type, int? page = null, int? pageSize = null, string sort = null);
+        IEnumerable<MetasysObject> Get(string type, int? page = null, int? pageSize = null, string? sort = null);
         /// <inheritdoc cref="ISpaceService.Get(string, int?, int?, string)"/>
-        Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string sort = null, CancellationToken ct = default);
+        Task<IEnumerable<MetasysObject>> GetAsync(string type, int? page = null, int? pageSize = null, string? sort = null, CancellationToken ct = default);
 
         // GetSpaceChildren ---------------------------------------------------------------------------------------------------------------
         /// <summary>

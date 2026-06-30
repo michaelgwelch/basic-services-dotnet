@@ -55,7 +55,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// Localized string if the resource was found, the default en-US localized string if not found,
         /// or the resource parameter value if neither resource is found.
         /// </returns>
-        string Localize(string resource, CultureInfo cultureInfo = null);
+        string Localize(string resource, CultureInfo? cultureInfo = null);
 
     }
 }

@@ -220,7 +220,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="cultureInfo">Localization culture for Metasys enumeration translations.</param>
         /// <param name="loggerFactory">Optional logger factory; pass null to suppress logging.</param>
         /// <param name="timeout">Set the Timeout (in seconds) of the https request.</param>
-        public MetasysClient(string hostname, bool ignoreCertificateErrors = false, ApiVersion version = ApiVersion.v2, CultureInfo cultureInfo = null, ILoggerFactory loggerFactory = null, int timeout = 300)
+        public MetasysClient(string hostname, bool ignoreCertificateErrors = false, ApiVersion version = ApiVersion.v2, CultureInfo? cultureInfo = null, ILoggerFactory loggerFactory = null, int timeout = 300)
         {
             try
             {
@@ -451,12 +451,12 @@ namespace JohnsonControls.Metasys.BasicServices
         // note: these methods are deprecated and kept only for backward compatibility with previous SDK version
 
         /// <inheritdoc/>
-        public IEnumerable<MetasysObject> GetNetworkDevices(string type = null)
+        public IEnumerable<MetasysObject> GetNetworkDevices(string? type = null)
         {
             return NetworkDevices.Get(type);
         }
         /// <inheritdoc/>
-        public async Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(string type = null, CancellationToken ct = default)
+        public async Task<IEnumerable<MetasysObject>> GetNetworkDevicesAsync(string? type = null, CancellationToken ct = default)
         {
             return await NetworkDevices.GetAsync(type);
         }
@@ -496,7 +496,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <inheritdoc/>
         public async Task<IEnumerable<MetasysObject>> GetObjectsAsync(ObjectId id, int levels, bool includeInternalObjects = false, bool includeExtensions = false, CancellationToken ct = default)
         {
-            Dictionary<string, string> parameters = null;
+            Dictionary<string, string>? parameters = null;
             if (Version == ApiVersion.v3)
             {
                 // Since API v3 we could use the includeInternalObjects parameter
@@ -536,7 +536,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <inheritdoc/>
         public async Task<IEnumerable<MetasysObject>> GetObjectsAsync(ObjectId objectId, string objectType, CancellationToken ct = default)
         {
-            Dictionary<string, string> parameters = null;
+            Dictionary<string, string>? parameters = null;
 
             if (Version > ApiVersion.v3)
             {
@@ -798,12 +798,12 @@ namespace JohnsonControls.Metasys.BasicServices
 
         // SendCommand --------------------------------------------------------------------------------------------------------------
         /// <inheritdoc/>
-        public void SendCommand(ObjectId id, string command, IEnumerable<object> values = null)
+        public void SendCommand(ObjectId id, string command, IEnumerable<object>? values = null)
         {
             SendCommandAsync(id, command, values).GetAwaiter().GetResult();
         }
         /// <inheritdoc/>
-        public async Task SendCommandAsync(ObjectId id, string command, IEnumerable<object> values = null, CancellationToken ct = default)
+        public async Task SendCommandAsync(ObjectId id, string command, IEnumerable<object>? values = null, CancellationToken ct = default)
         {
             if (values == null)
             {

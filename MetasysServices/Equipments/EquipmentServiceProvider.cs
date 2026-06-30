@@ -24,7 +24,7 @@ namespace JohnsonControls.Metasys.BasicServices
         /// <param name="client">The FlurlClient to get response from URL.</param>
         /// <param name="version">The server's Api version.</param>
         /// <param name="logger">Optional logger; pass null to suppress logging.</param>
-        public EquipmentServiceProvider(IFlurlClient client, ApiVersion version, ILogger logger = null) : base(client, version, logger)
+        public EquipmentServiceProvider(IFlurlClient client, ApiVersion version, ILogger? logger = null) : base(client, version, logger)
         {
         }
 
@@ -54,7 +54,7 @@ namespace JohnsonControls.Metasys.BasicServices
         {
             CheckVersion(Version);
 
-            Dictionary<string, string> parameters = null;
+            Dictionary<string, string>? parameters = null;
             if ((page != null && page > 0) | (pageSize != null && pageSize > 0)) parameters = new Dictionary<string, string>();
 
             if (page != null && page > 0 && parameters != null) parameters.Add("page", page.ToString());
