@@ -592,7 +592,7 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestReadPropertyMultipleNullAttributes()
     {
-        List<Guid> ids = new() { mockid };
+        List<ObjectId> ids = new() { (ObjectId)mockid };
 
         var results = client.ReadPropertyMultiple(ids, null);
 
@@ -603,7 +603,7 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestReadPropertyMultipleEmptyIds()
     {
-        List<Guid> ids = new() { };
+        List<ObjectId> ids = new() { };
         List<string> attributes = new() { mockAttributeName };
 
         var results = client.ReadPropertyMultiple(ids, attributes);

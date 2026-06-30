@@ -628,9 +628,9 @@ public class JsonOutputDemo
     private void GetSpaceEquipment_GetSpaceChildren(Guid spaceId)
     {
         /* SNIPPET 4: START */
-        IEnumerable<MetasysObject> spaceEquipment = client.GetSpaceEquipment(spaceId);
+        IEnumerable<MetasysObject> spaceEquipment = client.Equipments.GetServingASpace((ObjectId)spaceId);
 
-        IEnumerable<MetasysObject> spaceChildren = client.GetSpaceChildren(spaceId);
+        IEnumerable<MetasysObject> spaceChildren = client.Spaces.GetChildren((ObjectId)spaceId);
         MetasysObject sampleSpaceEquipment = spaceEquipment.FirstOrDefault();
         /* SNIPPET 4: END */
     }
@@ -638,7 +638,7 @@ public class JsonOutputDemo
     private void GetEquipmentPoints(MetasysObject sampleEquipment)
     {
         /* SNIPPET 5: START */
-        IEnumerable<MetasysPoint> equipmentPoints = client.GetEquipmentPoints(new Guid(sampleEquipment.Id));
+        IEnumerable<MetasysPoint> equipmentPoints = client.Equipments.GetPoints((ObjectId)new Guid(sampleEquipment.Id));
         MetasysPoint point = equipmentPoints.FindByShortName("Analog Input-1");
         string presentValue = point.PresentValue?.StringValue;
         Console.WriteLine(point);

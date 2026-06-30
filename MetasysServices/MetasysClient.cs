@@ -418,31 +418,6 @@ public class MetasysClient : BasicServiceProvider, IMetasysClient
         return await Equipments.GetAsync();
     }
 
-    // GetEquipmentPoints -------------------------------------------------------------------------------------------------------
-    // Retrieves the collection of points that are defined by the specified equipment instance
-    /// <inheritdoc/>
-    public IEnumerable<MetasysPoint> GetEquipmentPoints(Guid equipmentId, bool readAttributeValue = true)
-    {
-        return Equipments.GetPoints(equipmentId, readAttributeValue);
-    }
-    /// <inheritdoc/>
-    public async Task<IEnumerable<MetasysPoint>> GetEquipmentPointsAsync(Guid equipmentId, bool readAttributeValue = true, CancellationToken ct = default)
-    {
-        return await Equipments.GetPointsAsync(equipmentId, readAttributeValue);
-    }
-
-    // GetSpaceEquipment --------------------------------------------------------------------------------------------------------
-    // Retrieves the collection of equipment that serve the specified space.
-    /// <inheritdoc/>
-    public IEnumerable<MetasysObject> GetSpaceEquipment(Guid spaceId)
-    {
-        return Equipments.GetServingASpace(spaceId);
-    }
-    /// <inheritdoc/>
-    public async Task<IEnumerable<MetasysObject>> GetSpaceEquipmentAsync(Guid spaceId, CancellationToken ct = default)
-    {
-        return await Equipments.GetServingASpaceAsync(spaceId);
-    }
     #endregion
 
 
@@ -829,18 +804,6 @@ public class MetasysClient : BasicServiceProvider, IMetasysClient
     public async Task<IEnumerable<MetasysObject>> GetSpacesAsync(SpaceTypeEnum? type = null, CancellationToken ct = default)
     {
         return await Spaces.GetAsync(type);
-    }
-
-    // GetSpaceChildren --------------------------------------------------------------------------------------------------------
-    /// <inheritdoc/>
-    public IEnumerable<MetasysObject> GetSpaceChildren(Guid spaceId)
-    {
-        return Spaces.GetChildren(spaceId);
-    }
-    /// <inheritdoc/>
-    public async Task<IEnumerable<MetasysObject>> GetSpaceChildrenAsync(Guid spaceId, CancellationToken ct = default)
-    {
-        return await Spaces.GetChildrenAsync(spaceId);
     }
 
     // GetSpaceTypes ----------------------------------------------------------------------------------------------------------
@@ -1242,50 +1205,5 @@ public class MetasysClient : BasicServiceProvider, IMetasysClient
     }
     #endregion
 
-    #region Deprecated Methods Due to Guid -> ObjectId
-    // ReadPropertyMultiple -----------------------------------------------------------------------------------------------------
-    /// <inheritdoc/>
-    [Obsolete("Use ReadPropertyMultiple(IEnumerable<ObjectId>, IEnumerable<string>) instead.")]
-    public IEnumerable<VariantMultiple> ReadPropertyMultiple(IEnumerable<Guid> ids, IEnumerable<string> attributeNames)
-    {
-        return ReadPropertyMultipleAsync(ids, attributeNames).GetAwaiter().GetResult();
-    }
-    /// <inheritdoc/>
-    [Obsolete("Use ReadPropertyMultipleAsync(IEnumerable<ObjectId>, IEnumerable<string>) instead.")]
-    public Task<IEnumerable<VariantMultiple>> ReadPropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<string> attributeNames, CancellationToken ct = default)
-    {
-        return ReadPropertyMultipleAsync(ids.Select(id => (ObjectId)id), attributeNames, ct);
-    }
-
-    // WritePropertyMultiple ----------------------------------------------------------------------------------------------------
-    ///<inheritdoc/>
-    [Obsolete("Use WritePropertyMultiple(IEnumerable<ObjectId>, Dictionary<string, object>) instead.")]
-    public void WritePropertyMultiple(IEnumerable<Guid> ids, Dictionary<string, object> attributeValues)
-    {
-        WritePropertyMultipleAsync(ids, attributeValues).GetAwaiter().GetResult();
-    }
-    ///<inheritdoc/>
-    [Obsolete("Use WritePropertyMultipleAsync(IEnumerable<ObjectId>, Dictionary<string, object>) instead.")]
-    public Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, Dictionary<string, object> attributeValues, CancellationToken ct = default)
-    {
-        return WritePropertyMultipleAsync(ids.Select(id => (ObjectId)id), attributeValues, ct);
-    }
-
-    // WritePropertyMultiple (2) ------------------------------------------------------------------------------------------------
-
-    /// <inheritdoc/>
-    [Obsolete("Use WritePropertyMultiple(IEnumerable<ObjectId> ids, IEnumerable<ValueTuple<string, Value>>) instead.")]
-    public void WritePropertyMultiple(IEnumerable<Guid> ids, IEnumerable<(string Attribute, object Value)> attributeValues)
-    {
-        WritePropertyMultipleAsync(ids, attributeValues).GetAwaiter().GetResult();
-    }
-    /// <inheritdoc/>
-    [Obsolete("Use WritePropertyMultipleAsync(IEnumerable<ObjectId> ids, IEnumerable<ValueTuple<string, Value>>) instead.")]
-    public Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<(string Attribute, object Value)> attributeValues)
-    {
-        return WritePropertyMultipleAsync(ids.Select(id => (ObjectId)id), attributeValues);
-    }
-
-    #endregion
 }
 

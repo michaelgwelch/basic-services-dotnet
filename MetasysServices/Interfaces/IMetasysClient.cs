@@ -356,13 +356,6 @@ public interface IMetasysClient : IBasicService
     /// <see cref="SpaceServiceProvider.GetChildrenAsync(ObjectId)"/> instead.
     /// </remarks>
     /// <param name="spaceId">The GUID of the parent space.</param>
-    [Obsolete("Use SpaceServiceProvider.GetChildren(ObjectId) instead.")]
-    IEnumerable<MetasysObject> GetSpaceChildren(Guid spaceId);
-    /// <inheritdoc cref="IMetasysClient.GetSpaceChildren(Guid)"/>
-    [Obsolete("Use SpaceServiceProvider.GetChildrenAsync(ObjectId) instead.")]
-    Task<IEnumerable<MetasysObject>> GetSpaceChildrenAsync(Guid spaceId, CancellationToken ct = default);
-
-
     // GetSpaceTypes -----------------------------------------------------------------------------------------------------------------
     /// <summary>
     /// <s>Retrieves the collection of all spaces types.</s>
@@ -406,27 +399,6 @@ public interface IMetasysClient : IBasicService
     /// <param name="readAttributeValue">Set to false if you would not read Points Attribute Value.</param>
     /// <remarks> Reading the Attribute Value attribute could take time depending on the number of points. </remarks>
     /// <returns></returns>
-    [Obsolete("Use EquipmentServiceProvider.GetPoints(ObjectId, bool) instead.")]
-    IEnumerable<MetasysPoint> GetEquipmentPoints(Guid equipmentId, bool readAttributeValue = true);
-    /// <inheritdoc cref="IMetasysClient.GetEquipmentPoints(Guid, bool)"/>
-    [Obsolete("Use EquipmentServiceProvider.GetPointsAsync(ObjectId, bool) instead.")]
-    Task<IEnumerable<MetasysPoint>> GetEquipmentPointsAsync(Guid equipmentId, bool readAttributeValue = true, CancellationToken ct = default);
-
-    // GetSpaceEquipment ------------------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// <s>Retrieves the collection of equipment that serve the specified space.</s>
-    /// </summary>
-    /// <remarks>
-    /// <b>This method is deprecated</b> Please use
-    /// <see cref="EquipmentServiceProvider.GetServingASpace(ObjectId)"/> or
-    /// <see cref="EquipmentServiceProvider.GetServingASpaceAsync(ObjectId)"/> instead.
-    /// </remarks>
-    /// <param name="spaceId"></param>
-    [Obsolete("Use EquipmentServiceProvider.GetServingASpace(ObjectId) instead.")]
-    IEnumerable<MetasysObject> GetSpaceEquipment(Guid spaceId);
-    /// <inheritdoc cref="IMetasysClient.GetSpaceEquipment(Guid)"/>
-    [Obsolete("Use EquipmentServiceProvider.GetServingASpaceAsync(ObjectId) instead.")]
-    Task<IEnumerable<MetasysObject>> GetSpaceEquipmentAsync(Guid spaceId, CancellationToken ct = default);
     #endregion
 
     /// <summary>
@@ -463,64 +435,6 @@ public interface IMetasysClient : IBasicService
     /// <returns>The task object representing the asynchronous operation.</returns>
     Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default);
 
-    // Deprecated Methods ===========================================================================================
-    #region Deprecated Methods due to Guid -> ObjectId change
-    /// <summary>
-    /// <s>Read many attribute values given the Guids of the objects.</s>
-    /// </summary>
-    /// <remarks>
-    /// This method is deprecated. Please use <see cref="ReadPropertyMultiple(IEnumerable{ObjectId}, IEnumerable{string})"/>
-    /// or <see cref="ReadPropertyMultipleAsync(IEnumerable{ObjectId}, IEnumerable{string})"/> instead.
-    /// </remarks>
-    /// <returns>
-    /// A list of VariantMultiple with all the specified attributes (if existing).
-    /// </returns>
-    /// <param name="ids"></param>
-    /// <param name="attributeNames"></param>
-    /// <exception cref="MetasysHttpException"></exception>
-    /// <exception cref="MetasysPropertyException"></exception>
-    [Obsolete("Use ReadPropertyMultiple(IEnumerable<ObjectId>, IEnumerable<string>) instead.")]
-    IEnumerable<VariantMultiple> ReadPropertyMultiple(IEnumerable<Guid> ids, IEnumerable<string> attributeNames);
-    /// <inheritdoc cref="IMetasysClient.ReadPropertyMultiple(IEnumerable{Guid}, IEnumerable{string})"/>
-    [Obsolete("Use ReadPropertyMultipleAsync(IEnumerable<ObjectId>, IEnumerable<string>) instead.")]
-    Task<IEnumerable<VariantMultiple>> ReadPropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<string> attributeNames, CancellationToken ct = default);
-
-
-    /// <summary>
-    /// <s>Write to many attribute values given the Guids of the objects.</s>
-    /// </summary>
-    /// <remarks>
-    /// <b>This method is deprecated.</b> Please use one of the following instead:
-    /// <see cref="WritePropertyMultiple(IEnumerable{ObjectId}, Dictionary{string, object})"/>,
-    /// <see cref="WritePropertyMultiple(IEnumerable{ObjectId}, IEnumerable{ValueTuple{string, object}})"/>,
-    /// <see cref="WritePropertyMultipleAsync(IEnumerable{ObjectId}, Dictionary{string, object})"/>,
-    /// or <see cref="WritePropertyMultipleAsync(IEnumerable{ObjectId}, IEnumerable{ValueTuple{string, object}})"/>.
-    /// </remarks>
-    /// <param name="ids"></param>
-    /// <param name="attributeValues">The (attribute, value) pairs.</param>
-    /// <exception cref="MetasysHttpException"></exception>
-    [Obsolete("Use WritePropertyMultiple(IEnumerable<ObjectId>, IEnumerable<string, object>) instead.")]
-    void WritePropertyMultiple(IEnumerable<Guid> ids, IEnumerable<(string Attribute, object Value)> attributeValues);
-    /// <inheritdoc cref="WritePropertyMultiple(IEnumerable{Guid}, IEnumerable{ValueTuple{string, object}})"/>
-    [Obsolete("Use WritePropertyMultiple(IEnumerable<ObjectId>, Dictionary<string, object>) instead.")]
-    void WritePropertyMultiple(IEnumerable<Guid> ids, Dictionary<string, object> attributeValues);
-
-    /// <summary>
-    /// <s>Write asynchronously to many attribute values given the Guids of the objects.</s>
-    /// </summary>
-    /// <remarks>
-    /// <b>This method is deprecated.</b> Please use
-    /// <see cref="WritePropertyMultipleAsync(IEnumerable{ObjectId}, Dictionary{string, object})"/> or
-    /// <see cref="WritePropertyMultipleAsync(IEnumerable{ObjectId}, IEnumerable{ValueTuple{string, object}})"/>
-    /// instead.
-    /// </remarks>
-    [Obsolete("Use WritePropertyMultipleAsync(IEnumerable<ObjectId>, IEnumerable<string, object>) instead.")]
-    Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, IEnumerable<(string Attribute, object Value)> attributeValues);
-    /// <inheritdoc cref="IMetasysClient.WritePropertyMultiple(IEnumerable{Guid}, Dictionary{string, object})"/>
-    [Obsolete("Use WritePropertyMultiple(IEnumerable<ObjectId>, Dictionary<string, object>) instead.")]
-    Task WritePropertyMultipleAsync(IEnumerable<Guid> ids, Dictionary<string, object> attributeValues, CancellationToken ct = default);
-
-    #endregion
 
 
 }

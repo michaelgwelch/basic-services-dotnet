@@ -19,7 +19,7 @@ public class EquipmentDemo
             // Select a point
             Console.WriteLine("\nPlease enter the equipment ID to retrieve all related points:");
             string equipmentID = Console.ReadLine();
-            IEnumerable<MetasysPoint> equipmentPoints = client.GetEquipmentPoints(new Guid(equipmentID));
+            IEnumerable<MetasysPoint> equipmentPoints = client.Equipments.GetPoints((ObjectId)new Guid(equipmentID));
             Console.WriteLine($"Points found: {equipmentPoints.Count()}");
             foreach (var p in equipmentPoints)
             {

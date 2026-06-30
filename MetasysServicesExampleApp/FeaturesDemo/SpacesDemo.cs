@@ -35,7 +35,7 @@ public class SpacesDemo
             // Select a space            
             Console.WriteLine("\nPlease enter the Space ID to retrieve all related equipment:");
             string spaceID = Console.ReadLine();
-            IEnumerable<MetasysObject> spaceEquipment = client.GetSpaceEquipment(new Guid(spaceID));
+            IEnumerable<MetasysObject> spaceEquipment = client.Equipments.GetServingASpace((ObjectId)new Guid(spaceID));
             Console.WriteLine($"Equipment found: {spaceEquipment.Count()}");
             foreach (var o in spaceEquipment)
             {
