@@ -2,7 +2,6 @@ using Flurl.Http;
 using JohnsonControls.Metasys.BasicServices;
 using JohnsonControls.Metasys.BasicServices.Enums;
 using System.Text.Json.Nodes;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -62,22 +61,19 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestLoginAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            CleanLogin();
-            httpTest.RespondWithJson(new { accessToken = "faketokenLoginAsyncContext", expires = date2 });
+        CleanLogin();
+        httpTest.RespondWithJson(new { accessToken = "faketokenLoginAsyncContext", expires = date2 });
 
-            client.TryLogin("username", "password");
+        client.TryLogin("username", "password");
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/login")
-                .WithVerb(HttpMethod.Post)
-                .WithContentType("application/json")
-                .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"}")
-                .Times(1);
-            var token = client.GetAccessToken();
-            var expected = new AccessToken("hostname", "username", "Bearer faketokenLoginAsyncContext", dateTime2);
-            Assert.AreEqual(expected, token);
-        });
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/login")
+            .WithVerb(HttpMethod.Post)
+            .WithContentType("application/json")
+            .WithRequestBody("{\"username\":\"username\",\"password\":\"password\"}")
+            .Times(1);
+        var token = client.GetAccessToken();
+        var expected = new AccessToken("hostname", "username", "Bearer faketokenLoginAsyncContext", dateTime2);
+        Assert.AreEqual(expected, token);
     }
 
     [Test]
@@ -180,20 +176,17 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestRefreshAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            CleanLogin();
-            httpTest.RespondWithJson(new { accessToken = "faketokenRefreshAsyncContext", expires = date2 });
+        CleanLogin();
+        httpTest.RespondWithJson(new { accessToken = "faketokenRefreshAsyncContext", expires = date2 });
 
-            client.Refresh();
+        client.Refresh();
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/refreshToken")
-                .WithVerb(HttpMethod.Get)
-                .Times(1);
-            var token = client.GetAccessToken();
-            var expected = new AccessToken("hostname", "cleanusername", "Bearer faketokenRefreshAsyncContext", dateTime2);
-            Assert.AreEqual(expected, token);
-        });
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/refreshToken")
+            .WithVerb(HttpMethod.Get)
+            .Times(1);
+        var token = client.GetAccessToken();
+        var expected = new AccessToken("hostname", "cleanusername", "Bearer faketokenRefreshAsyncContext", dateTime2);
+        Assert.AreEqual(expected, token);
     }
 
     [Test]
@@ -259,15 +252,12 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestGetObjectIdentifierAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            httpTest.RespondWith($"\"{mockid}\"");
-            var id = client.GetObjectIdentifier("fully:qualified/reference2");
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objectIdentifiers")
-                .WithVerb(HttpMethod.Get)
-                .Times(1);
-            Assert.AreEqual(mockid, id);
-        });
+        httpTest.RespondWith($"\"{mockid}\"");
+        var id = client.GetObjectIdentifier("fully:qualified/reference2");
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objectIdentifiers")
+            .WithVerb(HttpMethod.Get)
+            .Times(1);
+        Assert.AreEqual(mockid, id);
     }
 
     [Test]
@@ -337,20 +327,17 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestReadPropertyIntegerAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            string json = "{\"item\": { \"" + mockAttributeName + "\": 1 }}";
-            var token = JsonNode.Parse(json);
-            httpTest.RespondWith(json);
+        string json = "{\"item\": { \"" + mockAttributeName + "\": 1 }}";
+        var token = JsonNode.Parse(json);
+        httpTest.RespondWith(json);
 
-            Variant result = client.ReadProperty(mockid, mockAttributeName);
+        Variant result = client.ReadProperty(mockid, mockAttributeName);
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes/{mockAttributeName}")
-                .WithVerb(HttpMethod.Get)
-                .Times(1);
-            var expected = new Variant(mockid, token, mockAttributeName, testCulture, ApiVersion.v2);
-            Assert.AreEqual(expected, result);
-        });
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes/{mockAttributeName}")
+            .WithVerb(HttpMethod.Get)
+            .Times(1);
+        var expected = new Variant(mockid, token, mockAttributeName, testCulture, ApiVersion.v2);
+        Assert.AreEqual(expected, result);
     }
 
     [Test]
@@ -691,34 +678,31 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestReadPropertyMultipleTwoIdFiveAttributeAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            httpTest
-                .RespondWith("{ \"item\": { \"" + mockAttributeName + "\": \"stringvalue\" } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName2 + "\": 23 } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName3 + "\": 23.5 } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName4 + "\": false } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName5 + "\": [ 4, 2, 3] } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName + "\": \"stringvalue\" } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName2 + "\": 23 } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName3 + "\": 23.5 } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName4 + "\": false } }")
-                .RespondWith("{ \"item\": { \"" + mockAttributeName5 + "\": [ 4, 2, 3] } }");
+        httpTest
+            .RespondWith("{ \"item\": { \"" + mockAttributeName + "\": \"stringvalue\" } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName2 + "\": 23 } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName3 + "\": 23.5 } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName4 + "\": false } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName5 + "\": [ 4, 2, 3] } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName + "\": \"stringvalue\" } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName2 + "\": 23 } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName3 + "\": 23.5 } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName4 + "\": false } }")
+            .RespondWith("{ \"item\": { \"" + mockAttributeName5 + "\": [ 4, 2, 3] } }");
 
-            List<ObjectId> ids = new() { mockid, mockid2 };
-            List<string> attributes = new() { mockAttributeName, mockAttributeName2, mockAttributeName3, mockAttributeName4, mockAttributeName5 };
-            var results = client.ReadPropertyMultiple(ids, attributes);
+        List<ObjectId> ids = new() { mockid, mockid2 };
+        List<string> attributes = new() { mockAttributeName, mockAttributeName2, mockAttributeName3, mockAttributeName4, mockAttributeName5 };
+        var results = client.ReadPropertyMultiple(ids, attributes);
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes*")
-                .WithVerb(HttpMethod.Get)
-                .Times(5);
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}/attributes*")
-                .WithVerb(HttpMethod.Get)
-                .Times(5);
-            Assert.AreEqual(results.Count(), 2);
-            Assert.AreEqual(5, results.ElementAt(0).Values.Count());
-            Assert.AreEqual(5, results.ElementAt(1).Values.Count());
-        });
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/attributes*")
+            .WithVerb(HttpMethod.Get)
+            .Times(5);
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}/attributes*")
+            .WithVerb(HttpMethod.Get)
+            .Times(5);
+        Assert.AreEqual(results.Count(), 2);
+        Assert.AreEqual(5, results.ElementAt(0).Values.Count());
+        Assert.AreEqual(5, results.ElementAt(1).Values.Count());
     }
 
     [Test]
@@ -787,17 +771,14 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestWritePropertyStringAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            httpTest.RespondWith("Accepted", 202);
+        httpTest.RespondWith("Accepted", 202);
 
-            client.WriteProperty(mockid, mockAttributeName, "newValue");
+        client.WriteProperty(mockid, mockAttributeName, "newValue");
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}")
-                .WithVerb(HttpMethod.Patch)
-                .WithRequestBody($"{{\"item\":{{\"{mockAttributeName}\":\"newValue\"}}}}")
-                .Times(1);
-        });
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}")
+            .WithVerb(HttpMethod.Patch)
+            .WithRequestBody($"{{\"item\":{{\"{mockAttributeName}\":\"newValue\"}}}}")
+            .Times(1);
     }
 
     [Test]
@@ -965,33 +946,30 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestWritePropertyMultipleManyIdsManyAttributesAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            httpTest.RespondWith("Accepted", 202);
-            List<ObjectId> ids = new() { mockid, mockid2 };
-            List<(string, object)> attributes = new() {
-                (mockAttributeName, "stringvalue"),
-                (mockAttributeName2, 23),
-                (mockAttributeName3, 23.5),
-                (mockAttributeName4, true),
-                (mockAttributeName5, new [] { 1, 2, 3 })};
+        httpTest.RespondWith("Accepted", 202);
+        List<ObjectId> ids = new() { mockid, mockid2 };
+        List<(string, object)> attributes = new() {
+            (mockAttributeName, "stringvalue"),
+            (mockAttributeName2, 23),
+            (mockAttributeName3, 23.5),
+            (mockAttributeName4, true),
+            (mockAttributeName5, new [] { 1, 2, 3 })};
 
-            client.WritePropertyMultiple(ids, attributes);
+        client.WritePropertyMultiple(ids, attributes);
 
-            string requestBody = string.Concat("{\"item\":{\"" + mockAttributeName + "\":\"stringvalue\",",
-                "\"" + mockAttributeName2 + "\":23,",
-                "\"" + mockAttributeName3 + "\":23.5,",
-                "\"" + mockAttributeName4 + "\":true,",
-                "\"" + mockAttributeName5 + "\":[1,2,3]}}");
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}")
-                .WithVerb(HttpMethod.Patch)
-                .WithRequestBody(requestBody)
-                .Times(1);
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}")
-                .WithVerb(HttpMethod.Patch)
-                .WithRequestBody(requestBody)
-                .Times(1);
-        });
+        string requestBody = string.Concat("{\"item\":{\"" + mockAttributeName + "\":\"stringvalue\",",
+            "\"" + mockAttributeName2 + "\":23,",
+            "\"" + mockAttributeName3 + "\":23.5,",
+            "\"" + mockAttributeName4 + "\":true,",
+            "\"" + mockAttributeName5 + "\":[1,2,3]}}");
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}")
+            .WithVerb(HttpMethod.Patch)
+            .WithRequestBody(requestBody)
+            .Times(1);
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid2}")
+            .WithVerb(HttpMethod.Patch)
+            .WithRequestBody(requestBody)
+            .Times(1);
     }
 
     [Test]
@@ -1082,18 +1060,15 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestSendCommandManyNumberAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            httpTest.RespondWith("OK", 200);
-            List<object> list = new() { 70.5, 1, 0 };
+        httpTest.RespondWith("OK", 200);
+        List<object> list = new() { 70.5, 1, 0 };
 
-            client.SendCommand(mockid, "TemporaryOperatorOverride", list);
+        client.SendCommand(mockid, "TemporaryOperatorOverride", list);
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands/TemporaryOperatorOverride")
-                .WithRequestBody("[70.5,1,0]")
-                .WithVerb(HttpMethod.Put)
-                .Times(1);
-        });
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands/TemporaryOperatorOverride")
+            .WithRequestBody("[70.5,1,0]")
+            .WithVerb(HttpMethod.Put)
+            .Times(1);
     }
 
     [Test]
@@ -1161,17 +1136,14 @@ public class MetasysClientTests : MetasysClientTestsBase
     [Test]
     public void TestGetCommandsNoneAsyncContext()
     {
-        AsyncContext.Run(() =>
-        {
-            httpTest.RespondWith("[]");
+        httpTest.RespondWith("[]");
 
-            var commands = client.GetCommands(mockid);
+        var commands = client.GetCommands(mockid);
 
-            httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands")
-                .WithVerb(HttpMethod.Get)
-                .Times(1);
-            Assert.AreEqual(0, commands.Count());
-        });
+        httpTest.ShouldHaveCalled($"https://hostname/api/v2/objects/{mockid}/commands")
+            .WithVerb(HttpMethod.Get)
+            .Times(1);
+        Assert.AreEqual(0, commands.Count());
     }
 
     [Test]
